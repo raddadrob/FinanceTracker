@@ -152,18 +152,16 @@
 
         // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
-            if (user && window.location.pathname.endsWith('details.html')) {
+            if (user) {
                 console.log('User is logged in:', user.email);
                 const content = document.getElementById('content');
                 if (content) {
                     content.style.display = 'block';
                     loadData();
-                    resetInactivityTimer();
-                    startInactivityTimer();
                 } else {
                     console.error('Content element not found');
                 }
-            } else if (!user) {
+            } else {
                 console.log('No user is logged in');
                 window.location.href = 'index.html'; // Redirect to login if not logged in
             }
@@ -554,6 +552,7 @@
     </div>
 </body>
 </html>
+
 
 
 
