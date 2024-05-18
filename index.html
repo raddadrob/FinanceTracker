@@ -85,16 +85,14 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (user && window.location.pathname.endsWith('index.html')) {
+                if (user) {
                     console.log('User is logged in:', user.email);
-                    window.location.href = 'index.html';
+                    window.location.href = 'index.html'; // Redirect to index.html after login
                 }
             });
             document.getElementById('login-form').addEventListener('submit', login);
             document.getElementById('register-form').addEventListener('submit', register);
             document.getElementById('toggle-register').addEventListener('click', toggleRegisterForm);
-            resetInactivityTimer();
-            startInactivityTimer();
         });
 
         async function login(event) {
@@ -139,65 +137,6 @@
                 registerContainer.style.display = 'none';
             }
         }
-
-        // Inactivity Timer
-        let inactivityTimer;
-        let promptTimer;
-        let countdownTimer;
-        let countdownElement;
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            clearTimeout(promptTimer);
-            clearInterval(countdownTimer);
-            if (countdownElement) {
-                countdownElement.remove();
-                countdownElement = null;
-            }
-            startInactivityTimer();
-        }
-
-        function startInactivityTimer() {
-            inactivityTimer = setTimeout(() => {
-                countdownElement = document.createElement('div');
-                countdownElement.style.position = 'fixed';
-                countdownElement.style.bottom = '20px';
-                countdownElement.style.right = '20px';
-                countdownElement.style.backgroundColor = '#444';
-                countdownElement.style.color = '#fff';
-                countdownElement.style.padding = '10px';
-                countdownElement.style.borderRadius = '5px';
-                countdownElement.style.zIndex = '1000';
-                document.body.appendChild(countdownElement);
-
-                let countdown = 30;
-                countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-
-                countdownTimer = setInterval(() => {
-                    countdown -= 1;
-                    countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-                    if (countdown <= 0) {
-                        clearInterval(countdownTimer);
-                        logOff();
-                    }
-                }, 1000);
-
-                promptTimer = setTimeout(() => {
-                    logOff();
-                }, 30000);  // 30 seconds after the initial prompt
-            }, 120000); // 120 seconds of inactivity before showing the countdown
-        }
-
-        function logOff() {
-            auth.signOut().then(() => {
-                window.location.href = 'index.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-
-        document.addEventListener('mousemove', resetInactivityTimer);
-        document.addEventListener('keydown', resetInactivityTimer);
     </script>
 </head>
 <body>
@@ -240,6 +179,7 @@
     </div>
 </body>
 </html>
+
 
 
 
