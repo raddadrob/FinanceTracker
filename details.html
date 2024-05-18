@@ -28,7 +28,7 @@
         }
         .menu-bar {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
         .menu-bar a {
@@ -41,6 +41,17 @@
         }
         .menu-bar a:hover {
             background: #0c0;
+        }
+        .logoff-button {
+            background: #f00;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logoff-button:hover {
+            background: #c00;
         }
         .section {
             margin-bottom: 20px;
@@ -150,6 +161,14 @@
                 window.location.href = 'index.html'; // Redirect to login if not logged in
             }
         });
+
+        function logOff() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
+        }
 
         async function loadData() {
             try {
@@ -333,8 +352,11 @@
     <div id="finance-tracker" class="container">
         <h1>Finance Tracker</h1>
         <div class="menu-bar">
-            <a href="index.html">Home</a>
-            <a href="details.html">View Details</a>
+            <div>
+                <a href="index.html">Home</a>
+                <a href="details.html">View Details</a>
+            </div>
+            <button class="logoff-button" onclick="logOff()">Log Off</button>
         </div>
         <div style="flex: 1;">
             <div class="section" id="stocks-and-bonds-section">
@@ -466,6 +488,7 @@
     </div>
 </body>
 </html>
+
 
 
 
