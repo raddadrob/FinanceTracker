@@ -53,10 +53,32 @@
         .logoff-button:hover {
             background: #c00;
         }
+        .summary {
+            margin-top: 20px;
+        }
+        .summary table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .summary table, th, td {
+            border: 1px solid #555;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #444;
+        }
+        .total {
+            font-weight: bold;
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
@@ -72,11 +94,15 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
         console.log('Firebase initialized');
 
         // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
-            if (!user) {
+            if (user) {
+                console.log('User is logged in:', user.email);
+                loadData();
+            } else {
                 console.log('No user is logged in');
                 window.location.href = 'index.html'; // Redirect to login if not logged in
             }
@@ -89,15 +115,80 @@
                 console.error('Error signing out:', error);
             });
         }
+
+        async function loadData() {
+            try {
+                const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
+                const stocksAndBonds = stocksAndBondsSnapshot.docs.map(doc => doc.data());
+
+                const realEstateSnapshot = await db.collection('real_estate').get();
+                const realEstate = realEstateSnapshot.docs.map(doc => doc.data());
+
+                const miscAssetsSnapshot = await db.collection('misc_assets').get();
+                const miscAssets = miscAssetsSnapshot.docs.map(doc => doc.data());
+
+                const liabilitiesSnapshot = await db.collection('liabilities').get();
+                const liabilities = liabilitiesSnapshot.docs.map(doc => doc.data());
+
+                const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
+                const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
+                const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
+                const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
+                const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
+                const netWorth = totalAssets - totalLiabilities;
+
+                document.getElementById('total-stocks-and-bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+                document.getElementById('total-real-estate').innerText = `$${formatNumber(totalRealEstate)}`;
+                document.getElementById('total-misc-assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+                document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+                document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
+                document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function formatNumber(number) {
+            return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Finance Tracker</h1>
+        <h1>Finance Tracker Summary</h1>
         <div class="button-group">
             <button onclick="window.location.href='details.html'">View Details</button>
             <button class="logoff-button" onclick="logOff()">Log Off</button>
         </div>
+        <div class="summary">
+            <table>
+                <tr>
+                    <th>Total Stocks & Bonds</th>
+                    <td id="total-stocks-and-bonds">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Real Estate</th>
+                    <td id="total-real-estate">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Misc. Assets</th>
+                    <td id="total-misc-assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Assets</th>
+                    <td id="total-assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Liabilities</th>
+                    <td id="total-liabilities">$0</td>
+                </tr>
+                <tr class="total">
+                    <th>Net Worth</th>
+                    <td id="net-worth">$0</td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 </html>
+
