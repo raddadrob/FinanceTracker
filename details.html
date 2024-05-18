@@ -369,6 +369,7 @@
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             clearTimeout(promptTimer);
+            startInactivityTimer();
         }
 
         function startInactivityTimer() {
@@ -378,7 +379,6 @@
                     logOff();
                 } else {
                     resetInactivityTimer();
-                    startInactivityTimer();
                 }
             }, 120000);
 
@@ -531,6 +531,7 @@
     </div>
 </body>
 </html>
+
 
 
 
