@@ -58,9 +58,47 @@
         .total {
             font-weight: bold;
         }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0c0;
+        }
+        #login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #content {
+            display: none;
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
         // Your Firebase configuration
@@ -76,10 +114,26 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore();
         console.log('Firebase initialized');
 
-        async function loadSummary() {
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Login successful
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    loadSummary();
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        function loadSummary() {
             try {
                 const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
                 const stocksAndBonds = stocksAndBondsSnapshot.docs.map(doc => doc.data());
@@ -111,48 +165,60 @@
         function formatNumber(number) {
             return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
-
-        // Initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSummary();
-        });
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Finance Tracker Summary</h1>
-        <div class="menu-bar">
-            <a href="index.html">Home</a>
-            <a href="details.html">View Details</a>
+    <div id="login-container">
+        <h1>Login</h1>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" required>
         </div>
-        <div class="section">
-            <h2>Summary</h2>
-            <table class="summary-table">
-                <tr>
-                    <th>Total Stocks & Bonds</th>
-                    <td id="total-stocks_and_bonds">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Real Estate</th>
-                    <td id="total-real_estate">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Misc. Assets</th>
-                    <td id="total-misc_assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Assets</th>
-                    <td id="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Liabilities</th>
-                    <td id="total-liabilities">$0</td>
-                </tr>
-                <tr class="total">
-                    <th>Net Worth</th>
-                    <td id="net-worth">$0</td>
-                </tr>
-            </table>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+        </div>
+        <div class="form-group">
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
+
+    <div id="content">
+        <div class="container">
+            <h1>Finance Tracker Summary</h1>
+            <div class="menu-bar">
+                <a href="index.html">Home</a>
+                <a href="details.html">View Details</a>
+            </div>
+            <div class="section">
+                <h2>Summary</h2>
+                <table class="summary-table">
+                    <tr>
+                        <th>Total Stocks & Bonds</th>
+                        <td id="total-stocks_and_bonds">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Real Estate</th>
+                        <td id="total-real_estate">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Misc. Assets</th>
+                        <td id="total-misc_assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Assets</th>
+                        <td id="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Liabilities</th>
+                        <td id="total-liabilities">$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Net Worth</th>
+                        <td id="net-worth">$0</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>
