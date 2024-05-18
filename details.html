@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cockrum Finances</title>
-    <style>
+    <style id="theme-style">
         body {
             font-family: Arial, sans-serif;
             background-color: #000;
@@ -417,6 +417,106 @@
 
         document.addEventListener('mousemove', resetInactivityTimer);
         document.addEventListener('keydown', resetInactivityTimer);
+
+        // Theme Toggle
+        function toggleTheme() {
+            const themeStyle = document.getElementById('theme-style');
+            if (themeStyle.innerHTML.includes('background-color: #000')) {
+                themeStyle.innerHTML = `
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #fff;
+                        color: #000;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        background: #eee;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #00f;
+                    }
+                    .menu-bar a {
+                        color: #00f;
+                        background: #ddd;
+                    }
+                    .menu-bar a:hover {
+                        background: #ccc;
+                    }
+                    .logoff-button {
+                        background: #00f;
+                        color: #fff;
+                    }
+                    .logoff-button:hover {
+                        background: #0057e7;
+                    }
+                    th {
+                        background-color: #ccc;
+                    }
+                    .delta-positive {
+                        color: #00f;
+                    }
+                    .delta-negative {
+                        color: #f00;
+                    }
+                `;
+            } else {
+                themeStyle.innerHTML = `
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #000;
+                        color: #fff;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        background: #333;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #0f0;
+                    }
+                    .menu-bar a {
+                        color: #0f0;
+                        background: #444;
+                    }
+                    .menu-bar a:hover {
+                        background: #0c0;
+                    }
+                    .logoff-button {
+                        background: #0f0;
+                        color: #000;
+                    }
+                    .logoff-button:hover {
+                        background: #0c0;
+                    }
+                    th {
+                        background-color: #444;
+                    }
+                    .delta-positive {
+                        color: #0f0;
+                    }
+                    .delta-negative {
+                        color: #f00;
+                    }
+                `;
+            }
+        }
     </script>
 </head>
 <body>
@@ -428,6 +528,7 @@
                 <a href="details.html">View Details</a>
             </div>
             <button class="logoff-button" onclick="logOff()">Log Off</button>
+            <button class="logoff-button" onclick="toggleTheme()">Theme</button>
         </div>
         <div id="content" style="flex: 1; display: none;">
             <div class="section" id="stocks-and-bonds-section">
