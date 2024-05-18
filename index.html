@@ -87,7 +87,7 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log('User is logged in:', user.email);
-                    window.location.href = 'details.html'; // Redirect to details.html after login
+                    window.location.href = 'home.html'; // Redirect to home.html after login
                 } else {
                     console.log('No user is logged in');
                 }
@@ -107,7 +107,7 @@
                 console.log('Attempting to log in with:', email);
                 await auth.signInWithEmailAndPassword(email, password);
                 console.log('User signed in successfully');
-                window.location.href = 'details.html';
+                window.location.href = 'home.html';
             } catch (error) {
                 console.error('Error signing in:', error);
                 document.getElementById('login-error').innerText = error.message;
@@ -129,7 +129,7 @@
                 console.log('Attempting to register with:', email);
                 await auth.createUserWithEmailAndPassword(email, password);
                 console.log('User registered successfully');
-                window.location.href = 'details.html';
+                window.location.href = 'home.html';
             } catch (error) {
                 console.error('Error registering:', error);
                 document.getElementById('register-error').innerText = error.message;
