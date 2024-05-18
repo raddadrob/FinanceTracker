@@ -152,7 +152,7 @@
 
         // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
-            if (user) {
+            if (user && window.location.pathname.endsWith('details.html')) {
                 console.log('User is logged in:', user.email);
                 const content = document.getElementById('content');
                 if (content) {
@@ -163,7 +163,7 @@
                 } else {
                     console.error('Content element not found');
                 }
-            } else {
+            } else if (!user) {
                 console.log('No user is logged in');
                 window.location.href = 'index.html'; // Redirect to login if not logged in
             }
@@ -424,7 +424,7 @@
             </div>
             <button class="logoff-button" onclick="logOff()">Log Off</button>
         </div>
-        <div id="content" style="flex: 1;">
+        <div id="content" style="flex: 1; display: none;">
             <div class="section" id="stocks-and-bonds-section">
                 <h2>Stocks & Bonds</h2>
                 <table class="aligned-table" id="stocks_and_bonds-table">
@@ -554,6 +554,7 @@
     </div>
 </body>
 </html>
+
 
 
 
