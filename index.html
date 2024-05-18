@@ -87,7 +87,12 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log('User is logged in:', user.email);
-                    window.location.href = 'details.html'; // Redirect to details.html after login
+                    if (window.location.pathname.endsWith('index.html')) {
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('content').style.display = 'block';
+                    } else {
+                        window.location.href = 'details.html';
+                    }
                 } else {
                     console.log('No user is logged in');
                 }
@@ -147,7 +152,7 @@
     </script>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="login-container">
         <h1>Finance Tracker Login</h1>
 
         <form id="login-form">
@@ -184,8 +189,14 @@
             </form>
         </div>
     </div>
+
+    <div id="content" style="display: none;">
+        <h1>Welcome to the Finance Tracker!</h1>
+        <a href="details.html">Go to Details Page</a>
+    </div>
 </body>
 </html>
+
 
 
 
