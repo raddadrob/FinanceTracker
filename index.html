@@ -87,14 +87,7 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log('User is logged in:', user.email);
-                    if (window.location.pathname.endsWith('index.html')) {
-                        console.log('Already on index.html, showing content');
-                        document.getElementById('login-container').style.display = 'none';
-                        document.getElementById('content').style.display = 'block';
-                    } else {
-                        console.log('Redirecting to index.html');
-                        window.location.href = 'index.html';
-                    }
+                    window.location.href = 'details.html'; // Redirect to details.html after login
                 } else {
                     console.log('No user is logged in');
                 }
@@ -114,7 +107,7 @@
                 console.log('Attempting to log in with:', email);
                 await auth.signInWithEmailAndPassword(email, password);
                 console.log('User signed in successfully');
-                window.location.href = 'index.html';
+                window.location.href = 'details.html';
             } catch (error) {
                 console.error('Error signing in:', error);
                 document.getElementById('login-error').innerText = error.message;
@@ -136,7 +129,7 @@
                 console.log('Attempting to register with:', email);
                 await auth.createUserWithEmailAndPassword(email, password);
                 console.log('User registered successfully');
-                window.location.href = 'index.html';
+                window.location.href = 'details.html';
             } catch (error) {
                 console.error('Error registering:', error);
                 document.getElementById('register-error').innerText = error.message;
@@ -154,7 +147,7 @@
     </script>
 </head>
 <body>
-    <div class="container" id="login-container">
+    <div class="container">
         <h1>Finance Tracker Login</h1>
 
         <form id="login-form">
@@ -191,13 +184,9 @@
             </form>
         </div>
     </div>
-
-    <div id="content" style="display: none;">
-        <h1>Welcome to the Finance Tracker!</h1>
-        <a href="details.html">Go to Details Page</a>
-    </div>
 </body>
 </html>
+
 
 
 
