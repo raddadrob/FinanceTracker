@@ -154,10 +154,15 @@
         auth.onAuthStateChanged((user) => {
             if (user) {
                 console.log('User is logged in:', user.email);
-                document.getElementById('content').style.display = 'block';
-                loadData();
-                resetInactivityTimer();
-                startInactivityTimer();
+                const content = document.getElementById('content');
+                if (content) {
+                    content.style.display = 'block';
+                    loadData();
+                    resetInactivityTimer();
+                    startInactivityTimer();
+                } else {
+                    console.error('Content element not found');
+                }
             } else {
                 console.log('No user is logged in');
                 window.location.href = 'index.html'; // Redirect to login if not logged in
@@ -522,6 +527,7 @@
     </div>
 </body>
 </html>
+
 
 
 
