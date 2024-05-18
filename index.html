@@ -85,9 +85,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (user && !window.location.pathname.endsWith('index.html')) {
+                if (user) {
                     console.log('User is logged in:', user.email);
-                    window.location.href = 'index.html'; // Redirect to index.html after login
+                    if (!window.location.pathname.endsWith('index.html')) {
+                        window.location.href = 'index.html'; // Redirect to index.html after login
+                    }
+                } else {
+                    console.log('No user is logged in');
                 }
             });
             document.getElementById('login-form').addEventListener('submit', login);
@@ -101,6 +105,7 @@
             const password = document.getElementById('login-password').value;
 
             try {
+                console.log('Attempting to log in with:', email);
                 await auth.signInWithEmailAndPassword(email, password);
                 console.log('User signed in successfully');
                 window.location.href = 'index.html';
@@ -122,6 +127,7 @@
             }
 
             try {
+                console.log('Attempting to register with:', email);
                 await auth.createUserWithEmailAndPassword(email, password);
                 console.log('User registered successfully');
                 window.location.href = 'index.html';
@@ -181,6 +187,7 @@
     </div>
 </body>
 </html>
+
 
 
 
