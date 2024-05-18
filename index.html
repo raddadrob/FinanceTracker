@@ -87,13 +87,19 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log('User is logged in:', user.email);
-                    if (!window.location.pathname.endsWith('index.html')) {
-                        window.location.href = 'index.html'; // Redirect to index.html after login
+                    if (window.location.pathname.endsWith('index.html')) {
+                        console.log('Already on index.html, showing content');
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('content').style.display = 'block';
+                    } else {
+                        console.log('Redirecting to index.html');
+                        window.location.href = 'index.html';
                     }
                 } else {
                     console.log('No user is logged in');
                 }
             });
+
             document.getElementById('login-form').addEventListener('submit', login);
             document.getElementById('register-form').addEventListener('submit', register);
             document.getElementById('toggle-register').addEventListener('click', toggleRegisterForm);
@@ -148,7 +154,7 @@
     </script>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="login-container">
         <h1>Finance Tracker Login</h1>
 
         <form id="login-form">
@@ -184,6 +190,11 @@
                 <button type="submit">Register</button>
             </form>
         </div>
+    </div>
+
+    <div id="content" style="display: none;">
+        <h1>Welcome to the Finance Tracker!</h1>
+        <a href="details.html">Go to Details Page</a>
     </div>
 </body>
 </html>
