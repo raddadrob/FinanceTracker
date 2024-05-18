@@ -381,6 +381,10 @@
                     startInactivityTimer();
                 }
             }, 120000);
+
+            promptTimer = setTimeout(() => {
+                logOff();
+            }, 150000);  // 30 seconds after the initial prompt
         }
 
         document.addEventListener('mousemove', resetInactivityTimer);
@@ -527,6 +531,7 @@
     </div>
 </body>
 </html>
+
 
 
 
