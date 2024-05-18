@@ -133,6 +133,7 @@
                     loadSummary();
                 })
                 .catch((error) => {
+                    console.error('Login error:', error.message);
                     alert(error.message);
                 });
         }
@@ -141,6 +142,9 @@
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const invitationCode = document.getElementById('invitation-code').value;
+
+            console.log('Registering with email:', email);
+            console.log('Registering with invitation code:', invitationCode);
 
             if (invitationCode !== validInvitationCode) {
                 alert("Invalid invitation code.");
@@ -153,6 +157,7 @@
                     login();
                 })
                 .catch((error) => {
+                    console.error('Registration error:', error.message);
                     alert(error.message);
                 });
         }
@@ -284,5 +289,6 @@
     </script>
 </body>
 </html>
+
 
 
