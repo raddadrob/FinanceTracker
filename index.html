@@ -86,6 +86,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
+                    console.log('User is logged in:', user.email);
                     window.location.href = 'index.html';
                 }
             });
@@ -158,39 +159,33 @@
 
         function startInactivityTimer() {
             inactivityTimer = setTimeout(() => {
-                const stayLoggedIn = confirm("You have been inactive for a while. Do you want to stay logged in?");
-                if (!stayLoggedIn) {
-                    logOff();
-                } else {
-                    resetInactivityTimer();
-                }
-            }, 120000);
+                countdownElement = document.createElement('div');
+                countdownElement.style.position = 'fixed';
+                countdownElement.style.bottom = '20px';
+                countdownElement.style.right = '20px';
+                countdownElement.style.backgroundColor = '#444';
+                countdownElement.style.color = '#fff';
+                countdownElement.style.padding = '10px';
+                countdownElement.style.borderRadius = '5px';
+                countdownElement.style.zIndex = '1000';
+                document.body.appendChild(countdownElement);
 
-            promptTimer = setTimeout(() => {
-                logOff();
-            }, 150000);  // 30 seconds after the initial prompt
-
-            countdownElement = document.createElement('div');
-            countdownElement.style.position = 'fixed';
-            countdownElement.style.bottom = '20px';
-            countdownElement.style.right = '20px';
-            countdownElement.style.backgroundColor = '#444';
-            countdownElement.style.color = '#fff';
-            countdownElement.style.padding = '10px';
-            countdownElement.style.borderRadius = '5px';
-            countdownElement.style.zIndex = '1000';
-            document.body.appendChild(countdownElement);
-
-            let countdown = 30;
-            countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-
-            countdownTimer = setInterval(() => {
-                countdown -= 1;
+                let countdown = 30;
                 countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-                if (countdown <= 0) {
-                    clearInterval(countdownTimer);
-                }
-            }, 1000);
+
+                countdownTimer = setInterval(() => {
+                    countdown -= 1;
+                    countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
+                    if (countdown <= 0) {
+                        clearInterval(countdownTimer);
+                        logOff();
+                    }
+                }, 1000);
+
+                promptTimer = setTimeout(() => {
+                    logOff();
+                }, 30000);  // 30 seconds after the initial prompt
+            }, 120000); // 120 seconds of inactivity before showing the countdown
         }
 
         function logOff() {
@@ -245,6 +240,7 @@
     </div>
 </body>
 </html>
+
 
 
 
