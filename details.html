@@ -238,7 +238,7 @@
 
         async function addLiability() {
             const description = document.getElementById('liability-description').value;
-            const value = parseInt(document.getElementById('liability-value').value, 10);
+            const value = parseInt(document.getElementById('liability-value`).value, 10);
 
             if (description && !isNaN(value)) {
                 const newLiability = { description, value, previousValue: value };
@@ -380,16 +380,22 @@
 
         function startInactivityTimer() {
             inactivityTimer = setTimeout(() => {
+                const popup = document.createElement('div');
+                popup.style.position = 'fixed';
+                popup.style.top = '50%';
+                popup.style.left = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+                popup.style.backgroundColor = '#444';
+                popup.style.color = '#fff';
+                popup.style.padding = '20px';
+                popup.style.borderRadius = '5px';
+                popup.style.zIndex = '1000';
+                popup.innerText = 'You have been inactive for a while. You will be logged out in 30 seconds unless you respond.';
+                document.body.appendChild(popup);
+
                 countdownElement = document.createElement('div');
-                countdownElement.style.position = 'fixed';
-                countdownElement.style.bottom = '20px';
-                countdownElement.style.right = '20px';
-                countdownElement.style.backgroundColor = '#444';
-                countdownElement.style.color = '#fff';
-                countdownElement.style.padding = '10px';
-                countdownElement.style.borderRadius = '5px';
-                countdownElement.style.zIndex = '1000';
-                document.body.appendChild(countdownElement);
+                countdownElement.style.marginTop = '10px';
+                popup.appendChild(countdownElement);
 
                 let countdown = 30;
                 countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
@@ -406,7 +412,7 @@
                 promptTimer = setTimeout(() => {
                     logOff();
                 }, 30000);  // 30 seconds after the initial prompt
-            }, 120000); // 120 seconds of inactivity before showing the countdown
+            }, 120000); // 120 seconds of inactivity before showing the popup
         }
 
         document.addEventListener('mousemove', resetInactivityTimer);
