@@ -121,6 +121,19 @@
         // Predefined invitation code
         const validInvitationCode = "smartypants71";
 
+        // Check if user is already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is logged in:', user.email);
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('register-container').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                loadSummary();
+            } else {
+                console.log('No user is logged in');
+            }
+        });
+
         function login() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
