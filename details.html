@@ -365,10 +365,17 @@
         // Inactivity Timer
         let inactivityTimer;
         let promptTimer;
+        let countdownTimer;
+        let countdownElement;
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             clearTimeout(promptTimer);
+            clearInterval(countdownTimer);
+            if (countdownElement) {
+                countdownElement.remove();
+                countdownElement = null;
+            }
             startInactivityTimer();
         }
 
@@ -385,6 +392,28 @@
             promptTimer = setTimeout(() => {
                 logOff();
             }, 150000);  // 30 seconds after the initial prompt
+
+            countdownElement = document.createElement('div');
+            countdownElement.style.position = 'fixed';
+            countdownElement.style.bottom = '20px';
+            countdownElement.style.right = '20px';
+            countdownElement.style.backgroundColor = '#444';
+            countdownElement.style.color = '#fff';
+            countdownElement.style.padding = '10px';
+            countdownElement.style.borderRadius = '5px';
+            countdownElement.style.zIndex = '1000';
+            document.body.appendChild(countdownElement);
+
+            let countdown = 30;
+            countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
+
+            countdownTimer = setInterval(() => {
+                countdown -= 1;
+                countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
+                if (countdown <= 0) {
+                    clearInterval(countdownTimer);
+                }
+            }, 1000);
         }
 
         document.addEventListener('mousemove', resetInactivityTimer);
