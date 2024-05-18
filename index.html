@@ -87,12 +87,8 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log('User is logged in:', user.email);
-                    if (window.location.pathname.endsWith('index.html')) {
-                        document.getElementById('login-container').style.display = 'none';
-                        document.getElementById('content').style.display = 'block';
-                    } else {
-                        window.location.href = 'details.html';
-                    }
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
                 } else {
                     console.log('No user is logged in');
                 }
@@ -196,6 +192,7 @@
     </div>
 </body>
 </html>
+
 
 
 
