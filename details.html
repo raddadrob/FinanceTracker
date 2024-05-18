@@ -174,14 +174,27 @@
 
         async function loadData() {
             try {
+                console.log('Loading data...');
                 const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
+                console.log('Stocks & Bonds snapshot:', stocksAndBondsSnapshot);
                 stocksAndBonds = stocksAndBondsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Stocks & Bonds data:', stocksAndBonds);
+
                 const realEstateSnapshot = await db.collection('real_estate').get();
+                console.log('Real Estate snapshot:', realEstateSnapshot);
                 realEstate = realEstateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Real Estate data:', realEstate);
+
                 const miscAssetsSnapshot = await db.collection('misc_assets').get();
+                console.log('Misc. Assets snapshot:', miscAssetsSnapshot);
                 miscAssets = miscAssetsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Misc. Assets data:', miscAssets);
+
                 const liabilitiesSnapshot = await db.collection('liabilities').get();
+                console.log('Liabilities snapshot:', liabilitiesSnapshot);
                 liabilities = liabilitiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Liabilities data:', liabilities);
+
                 updateTable('stocks_and_bonds', stocksAndBonds);
                 updateTable('real_estate', realEstate);
                 updateTable('misc_assets', miscAssets);
@@ -379,7 +392,7 @@
             </div>
             <button class="logoff-button" onclick="logOff()">Log Off</button>
         </div>
-        <div style="flex: 1;">
+        <div id="content" style="flex: 1;">
             <div class="section" id="stocks-and-bonds-section">
                 <h2>Stocks & Bonds</h2>
                 <table class="aligned-table" id="stocks_and_bonds-table">
@@ -509,6 +522,7 @@
     </div>
 </body>
 </html>
+
 
 
 
