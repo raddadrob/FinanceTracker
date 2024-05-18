@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker</title>
+    <title>Cockrum Finances</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,15 +43,15 @@
             background: #0c0;
         }
         .logoff-button {
-            background: #f00;
-            color: #fff;
+            background: #0f0;
+            color: #000;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
         .logoff-button:hover {
-            background: #c00;
+            background: #0c0;
         }
         .section {
             margin-bottom: 20px;
@@ -266,19 +266,7 @@
                 total += item.value;
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
-                const valueCell = row.insertCell(1);
-                valueCell.innerText = `$${formatNumber(item.value)}`;
-                const delta = item.value - (item.previousValue || 0);
-                const deltaSpan = document.createElement('span');
-                deltaSpan.classList.add('delta');
-                deltaSpan.innerText = ` ($${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
-                if (type === 'liabilities') {
-                    deltaSpan.classList.add(delta >= 0 ? 'delta-negative' : 'delta-positive');
-                } else {
-                    deltaSpan.classList.add(delta >= 0 ? 'delta-positive' : 'delta-negative');
-                }
-                valueCell.appendChild(deltaSpan);
-                const actionCell = row.insertCell(2);
+                const actionCell = row.insertCell(1);
                 actionCell.classList.add('action-buttons');
 
                 // Edit button
@@ -292,6 +280,19 @@
                 deleteButton.innerText = 'Delete';
                 deleteButton.onclick = () => deleteItem(type, index, item.id);
                 actionCell.appendChild(deleteButton);
+
+                const valueCell = row.insertCell(2);
+                valueCell.innerText = `$${formatNumber(item.value)}`;
+                const delta = item.value - (item.previousValue || 0);
+                const deltaSpan = document.createElement('span');
+                deltaSpan.classList.add('delta');
+                deltaSpan.innerText = ` ($${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
+                if (type === 'liabilities') {
+                    deltaSpan.classList.add(delta >= 0 ? 'delta-negative' : 'delta-positive');
+                } else {
+                    deltaSpan.classList.add(delta >= 0 ? 'delta-positive' : 'delta-negative');
+                }
+                valueCell.appendChild(deltaSpan);
             });
 
             document.getElementById(`total-${type}`).innerText = `$${formatNumber(total)}`;
@@ -414,7 +415,7 @@
 </head>
 <body>
     <div id="finance-tracker" class="container">
-        <h1>Finance Tracker</h1>
+        <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div>
                 <a href="home.html">Home</a>
@@ -429,8 +430,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Action</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -453,8 +454,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Action</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -477,8 +478,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Action</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -501,8 +502,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Action</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -552,6 +553,7 @@
     </div>
 </body>
 </html>
+
 
 
 
