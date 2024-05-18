@@ -156,6 +156,8 @@
                 console.log('User is logged in:', user.email);
                 document.getElementById('content').style.display = 'block';
                 loadData();
+                resetInactivityTimer();
+                startInactivityTimer();
             } else {
                 console.log('No user is logged in');
                 window.location.href = 'index.html'; // Redirect to login if not logged in
@@ -342,10 +344,29 @@
             return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
-        // Initial update
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-        });
+        // Inactivity Timer
+        let inactivityTimer;
+        let promptTimer;
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            clearTimeout(promptTimer);
+        }
+
+        function startInactivityTimer() {
+            inactivityTimer = setTimeout(() => {
+                const stayLoggedIn = confirm("You have been inactive for a while. Do you want to stay logged in?");
+                if (!stayLoggedIn) {
+                    logOff();
+                } else {
+                    resetInactivityTimer();
+                    startInactivityTimer();
+                }
+            }, 120000);
+        }
+
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keydown', resetInactivityTimer);
     </script>
 </head>
 <body>
@@ -488,6 +509,7 @@
     </div>
 </body>
 </html>
+
 
 
 
