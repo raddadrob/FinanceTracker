@@ -56,6 +56,10 @@
             color: #f00;
             margin-bottom: 10px;
         }
+        #register-container {
+            display: none;
+            margin-top: 20px;
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -82,6 +86,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-form').addEventListener('submit', login);
             document.getElementById('register-form').addEventListener('submit', register);
+            document.getElementById('toggle-register').addEventListener('click', toggleRegisterForm);
             resetInactivityTimer();
             startInactivityTimer();
         });
@@ -117,6 +122,15 @@
             } catch (error) {
                 console.error('Error registering:', error);
                 document.getElementById('register-error').innerText = error.message;
+            }
+        }
+
+        function toggleRegisterForm() {
+            const registerContainer = document.getElementById('register-container');
+            if (registerContainer.style.display === 'none') {
+                registerContainer.style.display = 'block';
+            } else {
+                registerContainer.style.display = 'none';
             }
         }
 
@@ -203,23 +217,26 @@
             <button type="submit">Login</button>
         </form>
 
-        <h2>Register</h2>
-        <form id="register-form">
-            <div id="register-error" class="error"></div>
-            <div class="form-group">
-                <label for="register-email">Email:</label>
-                <input type="email" id="register-email" required>
-            </div>
-            <div class="form-group">
-                <label for="register-password">Password:</label>
-                <input type="password" id="register-password" required>
-            </div>
-            <div class="form-group">
-                <label for="invitation-code">Invitation Code:</label>
-                <input type="text" id="invitation-code" required>
-            </div>
-            <button type="submit">Register</button>
-        </form>
+        <button id="toggle-register">Register</button>
+        <div id="register-container">
+            <h2>Register</h2>
+            <form id="register-form">
+                <div id="register-error" class="error"></div>
+                <div class="form-group">
+                    <label for="register-email">Email:</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password:</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="invitation-code">Invitation Code:</label>
+                    <input type="text" id="invitation-code" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
