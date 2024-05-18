@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker Summary</title>
+    <title>Finance Tracker Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,66 +11,23 @@
             color: #fff;
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
             background: #333;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         h1 {
-            text-align: center;
             color: #0f0;
-        }
-        .menu-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .menu-bar a {
-            color: #0f0;
-            text-decoration: none;
-            margin: 0 15px;
-            padding: 10px 20px;
-            background: #444;
-            border-radius: 4px;
-        }
-        .menu-bar a:hover {
-            background: #0c0;
-        }
-        .logoff-button {
-            background: #f00;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .logoff-button:hover {
-            background: #c00;
-        }
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .summary-table, th, td {
-            border: 1px solid #555;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #444;
-        }
-        .total {
-            font-weight: bold;
         }
         .form-group {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .form-group label {
             display: block;
@@ -78,7 +35,7 @@
         }
         .form-group input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
@@ -95,16 +52,9 @@
         .form-group button:hover {
             background-color: #0c0;
         }
-        #login-container, #register-container {
-            max-width: 400px;
-            margin: 50px auto;
-            background: #444;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        #content {
-            display: none;
+        .error {
+            color: #f00;
+            margin-bottom: 10px;
         }
     </style>
     <!-- Firebase SDK -->
@@ -129,67 +79,99 @@
         const db = firebase.firestore();
         console.log('Firebase initialized');
 
-        // Predefined invitation code
-        const validInvitationCode = "smartypants71";
-
-        // Check if user is already logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('User is logged in:', user.email);
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('register-container').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                loadSummary();
-                resetInactivityTimer();
-                startInactivityTimer();
-            } else {
-                console.log('No user is logged in');
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-form').addEventListener('submit', login);
+            document.getElementById('register-form').addEventListener('submit', register);
+            resetInactivityTimer();
+            startInactivityTimer();
         });
 
-        function login() {
+        async function login(event) {
+            event.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Login successful
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('register-container').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
-                    loadSummary();
-                    resetInactivityTimer();
-                    startInactivityTimer();
-                })
-                .catch((error) => {
-                    console.error('Login error:', error.message);
-                    alert(error.message);
-                });
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                window.location.href = 'details.html';
+            } catch (error) {
+                console.error('Error signing in:', error);
+                document.getElementById('login-error').innerText = error.message;
+            }
         }
 
-        function register() {
+        async function register(event) {
+            event.preventDefault();
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const invitationCode = document.getElementById('invitation-code').value;
 
-            console.log('Registering with email:', email);
-            console.log('Registering with invitation code:', invitationCode);
-
-            if (invitationCode !== validInvitationCode) {
-                alert("Invalid invitation code.");
+            if (invitationCode !== 'smartypants71') {
+                document.getElementById('register-error').innerText = 'Invalid invitation code';
                 return;
             }
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log('Registration successful:', userCredential.user);
-                    // Registration successful, log in the user
-                    alert('Registration successful! Logging you in...');
-                    login();
-                })
-                .catch((error) => {
-                    console.error('Registration error:', error.message);
-                    alert(error.message);
-                });
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                window.location.href = 'details.html';
+            } catch (error) {
+                console.error('Error registering:', error);
+                document.getElementById('register-error').innerText = error.message;
+            }
+        }
+
+        // Inactivity Timer
+        let inactivityTimer;
+        let promptTimer;
+        let countdownTimer;
+        let countdownElement;
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            clearTimeout(promptTimer);
+            clearInterval(countdownTimer);
+            if (countdownElement) {
+                countdownElement.remove();
+                countdownElement = null;
+            }
+            startInactivityTimer();
+        }
+
+        function startInactivityTimer() {
+            inactivityTimer = setTimeout(() => {
+                const stayLoggedIn = confirm("You have been inactive for a while. Do you want to stay logged in?");
+                if (!stayLoggedIn) {
+                    logOff();
+                } else {
+                    resetInactivityTimer();
+                }
+            }, 120000);
+
+            promptTimer = setTimeout(() => {
+                logOff();
+            }, 150000);  // 30 seconds after the initial prompt
+
+            countdownElement = document.createElement('div');
+            countdownElement.style.position = 'fixed';
+            countdownElement.style.bottom = '20px';
+            countdownElement.style.right = '20px';
+            countdownElement.style.backgroundColor = '#444';
+            countdownElement.style.color = '#fff';
+            countdownElement.style.padding = '10px';
+            countdownElement.style.borderRadius = '5px';
+            countdownElement.style.zIndex = '1000';
+            document.body.appendChild(countdownElement);
+
+            let countdown = 30;
+            countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
+
+            countdownTimer = setInterval(() => {
+                countdown -= 1;
+                countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
+                if (countdown <= 0) {
+                    clearInterval(countdownTimer);
+                }
+            }, 1000);
         }
 
         function logOff() {
@@ -200,158 +182,45 @@
             });
         }
 
-        async function loadSummary() {
-            try {
-                const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
-                const stocksAndBonds = stocksAndBondsSnapshot.docs.map(doc => doc.data());
-                const realEstateSnapshot = await db.collection('real_estate').get();
-                const realEstate = realEstateSnapshot.docs.map(doc => doc.data());
-                const miscAssetsSnapshot = await db.collection('misc_assets').get();
-                const miscAssets = miscAssetsSnapshot.docs.map(doc => doc.data());
-                const liabilitiesSnapshot = await db.collection('liabilities').get();
-                const liabilities = liabilitiesSnapshot.docs.map(doc => doc.data());
-
-                const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
-                const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
-                const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
-                const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
-                const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-                const netWorth = totalAssets - totalLiabilities;
-
-                document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-                document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-                document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-                document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-                document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
-                document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
-            } catch (error) {
-                console.error('Error loading summary:', error);
-            }
-        }
-
-        function formatNumber(number) {
-            return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        // Inactivity Timer
-        let inactivityTimer;
-        let promptTimer;
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            clearTimeout(promptTimer);
-        }
-
-        function startInactivityTimer() {
-            inactivityTimer = setTimeout(() => {
-                const stayLoggedIn = confirm("You have been inactive for a while. Do you want to stay logged in?");
-                if (!stayLoggedIn) {
-                    logOff();
-                } else {
-                    resetInactivityTimer();
-                    startInactivityTimer();
-                }
-            }, 120000);
-        }
-
         document.addEventListener('mousemove', resetInactivityTimer);
         document.addEventListener('keydown', resetInactivityTimer);
     </script>
 </head>
 <body>
-    <div id="login-container">
-        <h1>Login</h1>
-        <div class="form-group">
-            <label for="login-email">Email:</label>
-            <input type="email" id="login-email" required>
-        </div>
-        <div class="form-group">
-            <label for="login-password">Password:</label>
-            <input type="password" id="login-password" required>
-        </div>
-        <div class="form-group">
-            <button onclick="login()">Login</button>
-        </div>
-        <div class="form-group">
-            <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
-        </div>
-    </div>
+    <div class="container">
+        <h1>Finance Tracker Login</h1>
 
-    <div id="register-container" style="display: none;">
-        <h1>Register</h1>
-        <div class="form-group">
-            <label for="register-email">Email:</label>
-            <input type="email" id="register-email" required>
-        </div>
-        <div class="form-group">
-            <label for="register-password">Password:</label>
-            <input type="password" id="register-password" required>
-        </div>
-        <div class="form-group">
-            <label for="invitation-code">Invitation Code:</label>
-            <input type="text" id="invitation-code" required>
-        </div>
-        <div class="form-group">
-            <button onclick="register()">Register</button>
-        </div>
-        <div class="form-group">
-            <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
-        </div>
-    </div>
-
-    <div id="content">
-        <div class="container">
-            <h1>Finance Tracker Summary</h1>
-            <div class="menu-bar">
-                <div>
-                    <a href="index.html">Home</a>
-                    <a href="details.html">View Details</a>
-                </div>
-                <button class="logoff-button" onclick="logOff()">Log Off</button>
+        <form id="login-form">
+            <div id="login-error" class="error"></div>
+            <div class="form-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" required>
             </div>
-            <div class="section">
-                <h2>Summary</h2>
-                <table class="summary-table">
-                    <tr>
-                        <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities">$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
+            <div class="form-group">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
             </div>
-        </div>
+            <button type="submit">Login</button>
+        </form>
+
+        <h2>Register</h2>
+        <form id="register-form">
+            <div id="register-error" class="error"></div>
+            <div class="form-group">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" required>
+            </div>
+            <div class="form-group">
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" required>
+            </div>
+            <div class="form-group">
+                <label for="invitation-code">Invitation Code:</label>
+                <input type="text" id="invitation-code" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
     </div>
-
-    <script>
-        function showRegister() {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('register-container').style.display = 'block';
-        }
-
-        function showLogin() {
-            document.getElementById('register-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
-        }
-    </script>
 </body>
 </html>
 
