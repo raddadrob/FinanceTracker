@@ -139,6 +139,18 @@
         const db = firebase.firestore();
         console.log('Firebase initialized');
 
+        // Check if user is already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is logged in:', user.email);
+                document.getElementById('content').style.display = 'block';
+                loadData();
+            } else {
+                console.log('No user is logged in');
+                window.location.href = 'index.html'; // Redirect to login if not logged in
+            }
+        });
+
         async function loadData() {
             try {
                 const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
@@ -454,5 +466,6 @@
     </div>
 </body>
 </html>
+
 
 
