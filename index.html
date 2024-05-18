@@ -102,6 +102,7 @@
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
+                console.log('User signed in successfully');
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error signing in:', error);
@@ -122,6 +123,7 @@
 
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
+                console.log('User registered successfully');
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error registering:', error);
@@ -179,6 +181,7 @@
     </div>
 </body>
 </html>
+
 
 
 
