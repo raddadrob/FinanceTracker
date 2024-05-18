@@ -153,7 +153,9 @@
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
+                    console.log('Registration successful:', userCredential.user);
                     // Registration successful, log in the user
+                    alert('Registration successful! Logging you in...');
                     login();
                 })
                 .catch((error) => {
@@ -289,6 +291,7 @@
     </script>
 </body>
 </html>
+
 
 
 
