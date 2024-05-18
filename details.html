@@ -238,7 +238,7 @@
 
         async function addLiability() {
             const description = document.getElementById('liability-description').value;
-            const value = parseInt(document.getElementById('liability-value`).value, 10);
+            const value = parseInt(document.getElementById('liability-value').value, 10);
 
             if (description && !isNaN(value)) {
                 const newLiability = { description, value, previousValue: value };
@@ -559,6 +559,7 @@
     </div>
 </body>
 </html>
+
 
 
 
