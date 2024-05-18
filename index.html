@@ -84,6 +84,11 @@
         console.log('Firebase initialized');
 
         document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'index.html';
+                }
+            });
             document.getElementById('login-form').addEventListener('submit', login);
             document.getElementById('register-form').addEventListener('submit', register);
             document.getElementById('toggle-register').addEventListener('click', toggleRegisterForm);
@@ -98,7 +103,7 @@
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                window.location.href = 'details.html';
+                window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error signing in:', error);
                 document.getElementById('login-error').innerText = error.message;
@@ -118,7 +123,7 @@
 
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
-                window.location.href = 'details.html';
+                window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error registering:', error);
                 document.getElementById('register-error').innerText = error.message;
@@ -240,6 +245,7 @@
     </div>
 </body>
 </html>
+
 
 
 
