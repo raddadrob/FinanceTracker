@@ -17,6 +17,7 @@
             height: 100vh;
         }
         .container {
+            max-width: 400px;
             background: #333;
             padding: 20px;
             border-radius: 8px;
@@ -25,24 +26,28 @@
         }
         h1 {
             color: #0f0;
+            margin-bottom: 20px;
         }
         .form-group {
             margin-bottom: 15px;
         }
         .form-group label {
             display: block;
+            text-align: left;
             margin-bottom: 5px;
         }
         .form-group input {
-            width: 100%;
-            padding: 10px;
+            width: calc(100% - 20px);
+            padding: 8px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
             color: #fff;
+            margin-bottom: 10px;
         }
         .form-group button {
-            padding: 10px 20px;
+            width: 100%;
+            padding: 10px;
             background-color: #0f0;
             color: #000;
             border: none;
@@ -52,19 +57,16 @@
         .form-group button:hover {
             background-color: #0c0;
         }
-        .error {
-            color: #f00;
-            margin-bottom: 10px;
-        }
-        #register-container {
-            display: none;
-            margin-top: 20px;
+        .toggle-link {
+            color: #0f0;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
         }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
@@ -80,78 +82,57 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
         console.log('Firebase initialized');
 
         document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    console.log('User is logged in:', user.email);
-                    window.location.href = 'home.html'; // Redirect to home.html after login
-                } else {
-                    console.log('No user is logged in');
-                }
+            document.getElementById('register-link').addEventListener('click', () => {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+            });
+            document.getElementById('login-link').addEventListener('click', () => {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('register-form').style.display = 'none';
             });
 
-            document.getElementById('login-form').addEventListener('submit', login);
-            document.getElementById('register-form').addEventListener('submit', register);
-            document.getElementById('toggle-register').addEventListener('click', toggleRegisterForm);
+            document.getElementById('login-button').addEventListener('click', login);
+            document.getElementById('register-button').addEventListener('click', register);
         });
 
-        async function login(event) {
-            event.preventDefault();
+        function login() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-
-            try {
-                console.log('Attempting to log in with:', email);
-                await auth.signInWithEmailAndPassword(email, password);
-                console.log('User signed in successfully');
-                window.location.href = 'home.html';
-            } catch (error) {
-                console.error('Error signing in:', error);
-                document.getElementById('login-error').innerText = error.message;
-            }
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'home.html';
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
         }
 
-        async function register(event) {
-            event.preventDefault();
+        function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            const invitationCode = document.getElementById('invitation-code').value;
+            const invitationCode = document.getElementById('register-invite-code').value;
 
-            if (invitationCode !== 'smartypants71') {
-                document.getElementById('register-error').innerText = 'Invalid invitation code';
-                return;
-            }
-
-            try {
-                console.log('Attempting to register with:', email);
-                await auth.createUserWithEmailAndPassword(email, password);
-                console.log('User registered successfully');
-                window.location.href = 'home.html';
-            } catch (error) {
-                console.error('Error registering:', error);
-                document.getElementById('register-error').innerText = error.message;
-            }
-        }
-
-        function toggleRegisterForm() {
-            const registerContainer = document.getElementById('register-container');
-            if (registerContainer.style.display === 'none') {
-                registerContainer.style.display = 'block';
+            if (invitationCode === "smartypants71") {
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then(() => {
+                        window.location.href = 'home.html';
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                    });
             } else {
-                registerContainer.style.display = 'none';
+                alert("Invalid invitation code.");
             }
         }
     </script>
 </head>
 <body>
-    <div class="container" id="login-container">
+    <div class="container">
         <h1>Finance Tracker Login</h1>
-
-        <form id="login-form">
-            <div id="login-error" class="error"></div>
+        <div id="login-form">
             <div class="form-group">
                 <label for="login-email">Email:</label>
                 <input type="email" id="login-email" required>
@@ -160,28 +141,29 @@
                 <label for="login-password">Password:</label>
                 <input type="password" id="login-password" required>
             </div>
-            <button type="submit">Login</button>
-        </form>
-
-        <button id="toggle-register">Register</button>
-        <div id="register-container">
+            <div class="form-group">
+                <button id="login-button">Login</button>
+            </div>
+            <a id="register-link" class="toggle-link">Register</a>
+        </div>
+        <div id="register-form" style="display: none;">
             <h2>Register</h2>
-            <form id="register-form">
-                <div id="register-error" class="error"></div>
-                <div class="form-group">
-                    <label for="register-email">Email:</label>
-                    <input type="email" id="register-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Password:</label>
-                    <input type="password" id="register-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="invitation-code">Invitation Code:</label>
-                    <input type="text" id="invitation-code" required>
-                </div>
-                <button type="submit">Register</button>
-            </form>
+            <div class="form-group">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" required>
+            </div>
+            <div class="form-group">
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" required>
+            </div>
+            <div class="form-group">
+                <label for="register-invite-code">Invitation Code:</label>
+                <input type="text" id="register-invite-code" required>
+            </div>
+            <div class="form-group">
+                <button id="register-button">Register</button>
+            </div>
+            <a id="login-link" class="toggle-link">Back to Login</a>
         </div>
     </div>
 </body>
