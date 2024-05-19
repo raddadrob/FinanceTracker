@@ -213,7 +213,7 @@
                 const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
 
                 runningBalance += credit - debit;
-                document.getElementById(`cash-${dateId}`).innerText = `Cash: $${runningBalance.toFixed(2)}`;
+                document.getElementById(`cash-${dateId}`).innerText = `Cash: $${runningBalance.toFixed(0)}`;
             }
         }
     </script>
@@ -241,5 +241,6 @@
     </div>
 </body>
 </html>
+
 
 
