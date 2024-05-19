@@ -96,6 +96,12 @@
             background: #222;
             color: #fff;
         }
+        .day input.credit {
+            color: green;
+        }
+        .day input.debit {
+            color: red;
+        }
         .ending-balance {
             margin-top: 20px;
             padding: 10px;
@@ -178,8 +184,8 @@
                 dayElement.classList.add('day');
                 dayElement.innerHTML = `
                     <header>${day} (${dayOfWeek})</header>
-                    <input type="number" id="credit-${day}" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="number" id="debit-${day}" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="number" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
+                    <input type="number" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
