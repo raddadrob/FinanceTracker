@@ -17,8 +17,8 @@
             height: 100vh;
         }
         .container {
-            max-width: 400px;
             width: 100%;
+            max-width: 400px;
             background: #333;
             padding: 20px;
             border-radius: 8px;
@@ -36,27 +36,31 @@
             margin-bottom: 5px;
         }
         .form-group input {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
             color: #fff;
+            margin: 0 auto;
+            display: block;
         }
         .form-group button {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
             background-color: #0f0;
             color: #000;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin: 0 auto;
+            display: block;
         }
         .form-group button:hover {
             background-color: #0c0;
         }
         .toggle-button {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
             background-color: #444;
             color: #fff;
@@ -64,6 +68,8 @@
             border-radius: 4px;
             cursor: pointer;
             margin-top: 10px;
+            margin: 0 auto;
+            display: block;
         }
         .toggle-button:hover {
             background-color: #555;
@@ -166,4 +172,5 @@
     </div>
 </body>
 </html>
+
 
