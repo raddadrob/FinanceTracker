@@ -3,65 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cockrum Finances</title>
+    <title>Details - Cockrum Finances</title>
     <style>
-        :root {
-            --background-color: #000;
-            --text-color: #fff;
-            --container-bg: #333;
-            --container-text: #fff;
-            --heading-color: #0f0;
-            --link-color: #0f0;
-            --link-bg: #444;
-            --link-hover-bg: #0c0;
-            --button-bg: #0f0;
-            --button-text: #000;
-            --button-hover-bg: #0c0;
-            --table-border: #555;
-            --table-heading-bg: #444;
-            --delta-positive: #0f0;
-            --delta-negative: #f00;
-        }
-
-        [data-theme='light'] {
-            --background-color: #fff;
-            --text-color: #000;
-            --container-bg: #eee;
-            --container-text: #000;
-            --heading-color: #00f;
-            --link-color: #00f;
-            --link-bg: #ddd;
-            --link-hover-bg: #ccc;
-            --button-bg: #00f;
-            --button-text: #fff;
-            --button-hover-bg: #0057e7;
-            --table-border: #ccc;
-            --table-heading-bg: #ccc;
-            --delta-positive: #0f0;
-            --delta-negative: #f00;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: #000;
+            color: #fff;
             margin: 0;
             padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: var(--container-bg);
+            background: #333;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            color: var(--container-text);
         }
         h1 {
             text-align: center;
-            color: var(--heading-color);
+            color: #0f0;
         }
         .menu-bar {
             display: flex;
@@ -74,36 +37,32 @@
             gap: 15px;
         }
         .menu-bar a {
-            color: var(--link-color);
+            color: #0f0;
             text-decoration: none;
             padding: 10px 20px;
-            background: var(--link-bg);
+            background: #444;
             border-radius: 4px;
         }
         .menu-bar a:hover {
-            background: var(--link-hover-bg);
+            background: #0c0;
         }
         .menu-buttons {
             display: flex;
             gap: 10px;
         }
         .logoff-button, .theme-button {
-            background: var(--button-bg);
-            color: var(--button-text);
+            background: #0f0;
+            color: #000;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
         .logoff-button:hover, .theme-button:hover {
-            background: var(--button-hover-bg);
+            background: #0c0;
         }
         .section {
             margin-bottom: 20px;
-        }
-        .section h2 {
-            margin-top: 0;
-            color: var(--heading-color);
         }
         table {
             width: 100%;
@@ -111,74 +70,49 @@
             margin-bottom: 20px;
         }
         table, th, td {
-            border: 1px solid var(--table-border);
+            border: 1px solid #555;
         }
         th, td {
             padding: 8px;
             text-align: left;
         }
         th {
-            background-color: var(--table-heading-bg);
-        }
-        .total {
-            font-weight: bold;
+            background-color: #444;
         }
         .form-group {
             display: flex;
-            align-items: center;
+            gap: 10px;
             margin-bottom: 10px;
-        }
-        .form-group label {
-            margin-right: 10px;
-        }
-        .form-group .spacer {
-            display: inline-block;
-            width: 50px; /* Adjust as needed for 5 blank spaces */
         }
         .form-group input {
             padding: 8px;
-            border: 1px solid var(--table-border);
+            border: 1px solid #555;
             border-radius: 4px;
-            background: var(--table-heading-bg);
-            color: var(--text-color);
+            background: #222;
+            color: #fff;
         }
         .form-group button {
             padding: 8px 16px;
-            background-color: var(--button-bg);
-            color: var(--button-text);
+            background-color: #0f0;
+            color: #000;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-left: 10px;
         }
         .form-group button:hover {
-            background-color: var(--button-hover-bg);
-        }
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-        }
-        .delta {
-            font-style: italic;
-            font-size: 90%; /* 2 points smaller than the base font size */
+            background-color: #0c0;
         }
         .delta-positive {
-            color: var(--delta-positive);
+            color: green;
         }
         .delta-negative {
-            color: var(--delta-negative);
-        }
-        .aligned-table th, .aligned-table td {
-            width: 33.33%;
+            color: red;
         }
     </style>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
-        // Your Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
@@ -189,28 +123,14 @@
             measurementId: "G-JFRC4K0BBF"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        console.log('Firebase initialized');
 
-        // Check if user is already logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('User is logged in:', user.email);
-                const content = document.getElementById('content');
-                if (content) {
-                    content.style.display = 'block';
-                    loadData();
-                } else {
-                    console.error('Content element not found');
-                }
-            } else {
-                console.log('No user is logged in');
-                window.location.href = 'index.html'; // Redirect to login if not logged in
-            }
-        });
+        let stocksAndBonds = [];
+        let realEstate = [];
+        let miscAssets = [];
+        let liabilities = [];
 
         function logOff() {
             auth.signOut().then(() => {
@@ -220,169 +140,100 @@
             });
         }
 
-        async function loadData() {
-            try {
-                console.log('Loading data...');
-                const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
-                console.log('Stocks & Bonds snapshot:', stocksAndBondsSnapshot);
-                stocksAndBonds = stocksAndBondsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Stocks & Bonds data:', stocksAndBonds);
-
-                const realEstateSnapshot = await db.collection('real_estate').get();
-                console.log('Real Estate snapshot:', realEstateSnapshot);
-                realEstate = realEstateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Real Estate data:', realEstate);
-
-                const miscAssetsSnapshot = await db.collection('misc_assets').get();
-                console.log('Misc. Assets snapshot:', miscAssetsSnapshot);
-                miscAssets = miscAssetsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Misc. Assets data:', miscAssets);
-
-                const liabilitiesSnapshot = await db.collection('liabilities').get();
-                console.log('Liabilities snapshot:', liabilitiesSnapshot);
-                liabilities = liabilitiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Liabilities data:', liabilities);
-
-                updateTable('stocks_and_bonds', stocksAndBonds);
-                updateTable('real_estate', realEstate);
-                updateTable('misc_assets', miscAssets);
-                updateTable('liabilities', liabilities);
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
-
-        let stocksAndBonds = [];
-        let realEstate = [];
-        let miscAssets = [];
-        let liabilities = [];
-
-        async function addAsset(assetType) {
-            const description = document.getElementById(`${assetType}-description`).value;
-            const value = parseInt(document.getElementById(`${assetType}-value`).value, 10);
-
-            if (description && !isNaN(value)) {
-                const newAsset = { description, value, previousValue: value };
-                console.log(`Adding ${assetType} asset:`, newAsset);
-                const docRef = await db.collection(assetType).add(newAsset);
-                newAsset.id = docRef.id;
-                if (assetType === 'stocks_and_bonds') {
-                    stocksAndBonds.push(newAsset);
-                } else if (assetType === 'real_estate') {
-                    realEstate.push(newAsset);
-                } else if (assetType === 'misc_assets') {
-                    miscAssets.push(newAsset);
-                }
-                updateTable(assetType, assetType === 'stocks_and_bonds' ? stocksAndBonds : assetType === 'real_estate' ? realEstate : miscAssets);
-                document.getElementById(`${assetType}-description`).value = '';
-                document.getElementById(`${assetType}-value`).value = '';
-            } else {
-                console.log('Invalid asset input');
-            }
-        }
-
-        async function addLiability() {
-            const description = document.getElementById('liability-description').value;
-            const value = parseInt(document.getElementById('liability-value').value, 10);
-
-            if (description && !isNaN(value)) {
-                const newLiability = { description, value, previousValue: value };
-                console.log('Adding liability:', newLiability);
-                const docRef = await db.collection('liabilities').add(newLiability);
-                newLiability.id = docRef.id;
-                liabilities.push(newLiability);
-                updateTable('liabilities', liabilities);
-                document.getElementById('liability-description').value = '';
-                document.getElementById('liability-value').value = '';
-            } else {
-                console.log('Invalid liability input');
-            }
-        }
-
-        function updateTable(type, items) {
-            const tableBody = document.getElementById(`${type}-table`).getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-
-            // Sort items by value in descending order
-            items.sort((a, b) => b.value - a.value);
-
-            let total = 0;
-            items.forEach((item, index) => {
-                total += item.value;
-                const row = tableBody.insertRow();
-                row.insertCell(0).innerText = item.description;
-                const actionCell = row.insertCell(1);
-                actionCell.classList.add('action-buttons');
-
-                // Edit button
-                const editButton = document.createElement('button');
-                editButton.innerText = 'Edit';
-                editButton.onclick = () => editItem(type, index, item);
-                actionCell.appendChild(editButton);
-
-                // Delete button
-                const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Delete';
-                deleteButton.onclick = () => deleteItem(type, index, item.id);
-                actionCell.appendChild(deleteButton);
-
-                const valueCell = row.insertCell(2);
-                valueCell.innerText = `$${formatNumber(item.value)}`;
-                const delta = item.value - (item.previousValue || 0);
-                const deltaSpan = document.createElement('span');
-                deltaSpan.classList.add('delta');
-                deltaSpan.innerText = ` ($${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
-                if (type === 'liabilities') {
-                    deltaSpan.classList.add(delta >= 0 ? 'delta-negative' : 'delta-positive');
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadData();
                 } else {
-                    deltaSpan.classList.add(delta >= 0 ? 'delta-positive' : 'delta-negative');
+                    window.location.href = 'index.html';
                 }
-                valueCell.appendChild(deltaSpan);
             });
+        });
 
-            document.getElementById(`total-${type}`).innerText = `$${formatNumber(total)}`;
+        async function loadData() {
+            await loadCollection('stocks_and_bonds', stocksAndBonds, updateTable);
+            await loadCollection('real_estate', realEstate, updateTable);
+            await loadCollection('misc_assets', miscAssets, updateTable);
+            await loadCollection('liabilities', liabilities, updateTable);
             updateSummary();
         }
 
-        function editItem(type, index, item) {
-            const description = prompt("Enter new description:", item.description);
-            const value = parseInt(prompt("Enter new value:", item.value), 10);
+        async function loadCollection(collection, dataArray, callback) {
+            const snapshot = await db.collection(collection).get();
+            dataArray.length = 0;
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                dataArray.push(data);
+            });
+            callback(collection, dataArray);
+        }
 
+        function updateTable(collection, dataArray) {
+            const tableBody = document.getElementById(`${collection}-table`).getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            dataArray.forEach((item, index) => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).innerText = item.description;
+                const valueCell = row.insertCell(1);
+                valueCell.innerText = `$${item.value.toFixed(0)}`;
+                const delta = item.value - (item.previousValue || 0);
+                const deltaCell = document.createElement('span');
+                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${delta.toFixed(0)})`;
+                deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
+                deltaCell.style.fontSize = '0.8em';
+                deltaCell.style.fontStyle = 'italic';
+                valueCell.appendChild(deltaCell);
+                const actionCell = row.insertCell(2);
+                const editButton = document.createElement('button');
+                editButton.innerText = 'Edit';
+                editButton.onclick = () => editItem(collection, index, item.id);
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Delete';
+                deleteButton.onclick = () => deleteItem(collection, index, item.id);
+                actionCell.appendChild(editButton);
+                actionCell.appendChild(deleteButton);
+            });
+        }
+
+        function editItem(collection, index, id) {
+            const description = prompt('Enter new description:', stocksAndBonds[index].description);
+            const value = parseFloat(prompt('Enter new value:', stocksAndBonds[index].value));
             if (description && !isNaN(value)) {
-                const updatedItem = { description, value, previousValue: item.value };
-                db.collection(type).doc(item.id).update(updatedItem)
-                    .then(() => {
-                        if (type === 'stocks_and_bonds') {
-                            stocksAndBonds[index] = { ...item, ...updatedItem };
-                        } else if (type === 'real_estate') {
-                            realEstate[index] = { ...item, ...updatedItem };
-                        } else if (type === 'misc_assets') {
-                            miscAssets[index] = { ...item, ...updatedItem };
-                        } else {
-                            liabilities[index] = { ...item, ...updatedItem };
-                        }
-                        updateTable(type, type === 'stocks_and_bonds' ? stocksAndBonds : type === 'real_estate' ? realEstate : type === 'misc_assets' ? miscAssets : liabilities);
-                    })
-                    .catch(error => console.error('Error updating document:', error));
-            } else {
-                console.log('Invalid input');
+                db.collection(collection).doc(id).update({
+                    description: description,
+                    value: value,
+                    previousValue: stocksAndBonds[index].value
+                }).then(() => {
+                    stocksAndBonds[index].description = description;
+                    stocksAndBonds[index].value = value;
+                    updateTable(collection, stocksAndBonds);
+                    updateSummary();
+                });
             }
         }
 
-        async function deleteItem(type, index, id) {
-            await db.collection(type).doc(id).delete();
-            if (type === 'stocks_and_bonds') {
-                stocksAndBonds.splice(index, 1);
-                updateTable('stocks_and_bonds', stocksAndBonds);
-            } else if (type === 'real_estate') {
-                realEstate.splice(index, 1);
-                updateTable('real_estate', realEstate);
-            } else if (type === 'misc_assets') {
-                miscAssets.splice(index, 1);
-                updateTable('misc_assets', miscAssets);
-            } else {
-                liabilities.splice(index, 1);
-                updateTable('liabilities', liabilities);
+        async function deleteItem(collection, index, id) {
+            await db.collection(collection).doc(id).delete();
+            stocksAndBonds.splice(index, 1);
+            updateTable(collection, stocksAndBonds);
+            updateSummary();
+        }
+
+        async function addAsset(collection) {
+            const description = document.getElementById(`${collection}-description`).value;
+            const value = parseFloat(document.getElementById(`${collection}-value`).value);
+            if (description && !isNaN(value)) {
+                const newItem = { description, value };
+                const docRef = await db.collection(collection).add(newItem);
+                newItem.id = docRef.id;
+                newItem.previousValue = 0;
+                stocksAndBonds.push(newItem);
+                updateTable(collection, stocksAndBonds);
+                document.getElementById(`${collection}-description`).value = '';
+                document.getElementById(`${collection}-value`).value = '';
+                updateSummary();
             }
         }
 
@@ -394,84 +245,12 @@
             const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
             const netWorth = totalAssets - totalLiabilities;
 
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
-            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
-        }
-
-        function formatNumber(number) {
-            return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        // Inactivity Timer
-        let inactivityTimer;
-        let promptTimer;
-        let countdownTimer;
-        let countdownElement;
-        let popup;
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            clearTimeout(promptTimer);
-            clearInterval(countdownTimer);
-            if (popup) {
-                popup.remove();
-                popup = null;
-            }
-            startInactivityTimer();
-        }
-
-        function startInactivityTimer() {
-            inactivityTimer = setTimeout(() => {
-                popup = document.createElement('div');
-                popup.style.position = 'fixed';
-                popup.style.top = '50%';
-                popup.style.left = '50%';
-                popup.style.transform = 'translate(-50%, -50%)';
-                popup.style.backgroundColor = '#444';
-                popup.style.color = '#fff';
-                popup.style.padding = '20px';
-                popup.style.borderRadius = '5px';
-                popup.style.zIndex = '1000';
-                popup.innerText = 'You have been inactive for a while. You will be logged out in 30 seconds unless you respond.';
-                document.body.appendChild(popup);
-
-                countdownElement = document.createElement('div');
-                countdownElement.style.marginTop = '10px';
-                popup.appendChild(countdownElement);
-
-                let countdown = 30;
-                countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-
-                countdownTimer = setInterval(() => {
-                    countdown -= 1;
-                    countdownElement.innerText = `You will be logged out in ${countdown} seconds`;
-                    if (countdown <= 0) {
-                        clearInterval(countdownTimer);
-                        logOff();
-                    }
-                }, 1000);
-
-                promptTimer = setTimeout(() => {
-                    logOff();
-                }, 30000);  // 30 seconds after the initial prompt
-            }, 120000); // 120 seconds of inactivity before showing the popup
-        }
-
-        document.addEventListener('mousemove', resetInactivityTimer);
-        document.addEventListener('keydown', resetInactivityTimer);
-
-        // Theme Toggle
-        function toggleTheme() {
-            const root = document.documentElement;
-            if (root.getAttribute('data-theme') === 'light') {
-                root.removeAttribute('data-theme');
-            } else {
-                root.setAttribute('data-theme', 'light');
-            }
+            document.getElementById('total-stocks_and_bonds').innerText = `$${totalStocksAndBonds.toFixed(0)}`;
+            document.getElementById('total-real_estate').innerText = `$${totalRealEstate.toFixed(0)}`;
+            document.getElementById('total-misc_assets').innerText = `$${totalMiscAssets.toFixed(0)}`;
+            document.getElementById('total-assets').innerText = `$${totalAssets.toFixed(0)}`;
+            document.getElementById('total-liabilities').innerText = `$${totalLiabilities.toFixed(0)}`;
+            document.getElementById('net-worth').innerText = `$${netWorth.toFixed(0)}`;
         }
     </script>
 </head>
@@ -480,23 +259,25 @@
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div class="menu-links">
-                <a href="home.html">Home</a>
+                <a href="index.html">Home</a>
                 <a href="details.html">View Details</a>
+                <a href="history.html">History</a>
+                <a href="calendar.html">Calendar</a>
             </div>
             <div class="menu-buttons">
                 <button class="theme-button" onclick="toggleTheme()">Theme</button>
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content" style="flex: 1; display: none;">
+        <div id="content" style="flex: 1;">
             <div class="section" id="stocks-and-bonds-section">
                 <h2>Stocks & Bonds</h2>
-                <table class="aligned-table" id="stocks_and_bonds-table">
+                <table id="stocks_and_bonds-table">
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Action</th>
                             <th>Value</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -504,23 +285,20 @@
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <label for="stocks_and_bonds-description">Description:</label>
-                    <input type="text" id="stocks_and_bonds-description">
-                    <span class="spacer"></span>
-                    <label for="stocks_and_bonds-value">Value:</label>
-                    <input type="number" id="stocks_and_bonds-value">
+                    <input type="text" id="stocks_and_bonds-description" placeholder="Description">
+                    <input type="number" id="stocks_and_bonds-value" placeholder="Value">
                     <button onclick="addAsset('stocks_and_bonds')">Add Stocks & Bonds</button>
                 </div>
             </div>
 
             <div class="section" id="real-estate-section">
                 <h2>Real Estate</h2>
-                <table class="aligned-table" id="real_estate-table">
+                <table id="real_estate-table">
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Action</th>
                             <th>Value</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -528,23 +306,20 @@
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <label for="real_estate-description">Description:</label>
-                    <input type="text" id="real_estate-description">
-                    <span class="spacer"></span>
-                    <label for="real_estate-value">Value:</label>
-                    <input type="number" id="real_estate-value">
+                    <input type="text" id="real_estate-description" placeholder="Description">
+                    <input type="number" id="real_estate-value" placeholder="Value">
                     <button onclick="addAsset('real_estate')">Add Real Estate</button>
                 </div>
             </div>
 
             <div class="section" id="misc-assets-section">
                 <h2>Misc. Assets</h2>
-                <table class="aligned-table" id="misc_assets-table">
+                <table id="misc_assets-table">
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Action</th>
                             <th>Value</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -552,23 +327,20 @@
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <label for="misc_assets-description">Description:</label>
-                    <input type="text" id="misc_assets-description">
-                    <span class="spacer"></span>
-                    <label for="misc_assets-value">Value:</label>
-                    <input type="number" id="misc_assets-value">
+                    <input type="text" id="misc_assets-description" placeholder="Description">
+                    <input type="number" id="misc_assets-value" placeholder="Value">
                     <button onclick="addAsset('misc_assets')">Add Misc. Assets</button>
                 </div>
             </div>
 
             <div class="section" id="liabilities-section">
                 <h2>Liabilities</h2>
-                <table class="aligned-table" id="liabilities-table">
+                <table id="liabilities-table">
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Action</th>
                             <th>Value</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -576,12 +348,9 @@
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <label for="liability-description">Description:</label>
-                    <input type="text" id="liability-description">
-                    <span class="spacer"></span>
-                    <label for="liability-value">Value:</label>
-                    <input type="number" id="liability-value">
-                    <button onclick="addLiability()">Add Liability</button>
+                    <input type="text" id="liability-description" placeholder="Description">
+                    <input type="number" id="liability-value" placeholder="Value">
+                    <button onclick="addAsset('liabilities')">Add Liability</button>
                 </div>
             </div>
 
