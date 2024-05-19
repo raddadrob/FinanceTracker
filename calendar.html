@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Calendar - Cockrum Finances</title>
+    <title>Calendar - Cockrum Finances</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,8 +61,17 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        .initial-balance {
+        .form-group {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
+        }
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
         }
         .calendar {
             display: grid;
@@ -73,20 +82,19 @@
             background: #444;
             padding: 10px;
             border-radius: 4px;
-            text-align: center;
+        }
+        .day header {
+            font-weight: bold;
+            margin-bottom: 10px;
         }
         .day input {
             width: 100%;
-            margin-bottom: 5px;
             padding: 5px;
+            margin-bottom: 5px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
             color: #fff;
-        }
-        .day .cash-balance {
-            font-weight: bold;
-            margin-top: 5px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -109,7 +117,7 @@
 
         function logOff() {
             auth.signOut().then(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
@@ -118,102 +126,26 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    generateCalendar();
+                    renderCalendar();
                 } else {
-                    window.location.href = 'index.html';
+                    window.location.href = 'login.html';
                 }
-            });
-
-            document.getElementById('initial-cash').addEventListener('change', () => {
-                localStorage.setItem('initialCash', document.getElementById('initial-cash').value);
-                updateCashBalances();
             });
         });
 
-        function generateCalendar() {
-            const container = document.getElementById('calendar');
-            const month = 4; // May is the 4th month (0-based index)
-            const year = 2024;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const startDay = new Date(year, month, 1).getDay();
-
-            let day = 1;
-            for (let i = 0; i < 6; i++) {
-                for (let j = 0; j < 7; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'day';
-
-                    if (i === 0 && j < startDay) {
-                        cell.innerHTML = '';
-                    } else if (day > daysInMonth) {
-                        break;
-                    } else {
-                        const dateId = `${year}-${month + 1}-${day}`;
-                        cell.innerHTML = `<strong>${day}</strong>
-                            <input type="number" placeholder="Credit" id="credit-${dateId}">
-                            <input type="number" placeholder="Debit" id="debit-${dateId}">
-                            <div class="cash-balance" id="cash-${dateId}"></div>`;
-
-                        // Load saved data from Firestore
-                        loadDayData(dateId);
-
-                        // Add event listeners to save data to Firestore
-                        document.getElementById(`credit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
-                        document.getElementById(`debit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
-
-                        day++;
-                    }
-
-                    container.appendChild(cell);
-                }
-            }
-            updateCashBalances();
-        }
-
-        function loadDayData(dateId) {
-            const docRef = db.collection('calendarData').doc(dateId);
-            docRef.get().then((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    document.getElementById(`credit-${dateId}`).value = data.credit || '';
-                    document.getElementById(`debit-${dateId}`).value = data.debit || '';
-                    updateCashBalances();
-                }
-            }).catch((error) => {
-                console.error("Error getting document:", error);
-            });
-        }
-
-        function saveDayData(dateId) {
-            const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
-            const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
-
-            db.collection('calendarData').doc(dateId).set({
-                credit: credit,
-                debit: debit
-            }).then(() => {
-                console.log("Document successfully written!");
-                updateCashBalances();
-            }).catch((error) => {
-                console.error("Error writing document: ", error);
-            });
-        }
-
-        function updateCashBalances() {
-            const initialCash = parseFloat(localStorage.getItem('initialCash')) || 0;
-            let runningBalance = initialCash;
-
-            const month = 4; // May is the 4th month (0-based index)
-            const year = 2024;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
+        function renderCalendar() {
+            const calendar = document.querySelector('.calendar');
+            const daysInMonth = new Date(2024, 5, 0).getDate(); // May 2024
             for (let day = 1; day <= daysInMonth; day++) {
-                const dateId = `${year}-${month + 1}-${day}`;
-                const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
-                const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
-
-                runningBalance += credit - debit;
-                document.getElementById(`cash-${dateId}`).innerText = `Cash: $${runningBalance.toFixed(0)}`;
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('day');
+                dayElement.innerHTML = `
+                    <header>${day}</header>
+                    <input type="number" placeholder="Credit">
+                    <input type="number" placeholder="Debit">
+                    <div>Cash: <span id="cash-${day}">$0</span></div>
+                `;
+                calendar.appendChild(dayElement);
             }
         }
     </script>
@@ -223,9 +155,8 @@
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div class="menu-links">
-                <a href="index.html">Home</a>
+                <a href="index.html">Summary</a>
                 <a href="details.html">View Details</a>
-                <a href="history.html">History</a>
                 <a href="calendar.html">Calendar</a>
             </div>
             <div class="menu-buttons">
@@ -233,14 +164,17 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div class="initial-balance">
-            <label for="initial-cash">Initial Cash Balance:</label>
-            <input type="number" id="initial-cash" placeholder="Enter initial cash balance">
+        <div id="content">
+            <div class="form-group">
+                <label for="initial-cash-balance">Initial Cash Balance:</label>
+                <input type="number" id="initial-cash-balance" placeholder="Enter initial cash balance">
+            </div>
+            <div class="calendar"></div>
         </div>
-        <div id="calendar" class="calendar"></div>
     </div>
 </body>
 </html>
+
 
 
 
