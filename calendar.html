@@ -84,6 +84,10 @@
             background: #222;
             color: #fff;
         }
+        .day .cash-balance {
+            font-weight: bold;
+            margin-top: 5px;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -119,6 +123,11 @@
                     window.location.href = 'index.html';
                 }
             });
+
+            document.getElementById('initial-cash').addEventListener('change', () => {
+                localStorage.setItem('initialCash', document.getElementById('initial-cash').value);
+                updateCashBalances();
+            });
         });
 
         function generateCalendar() {
@@ -139,15 +148,72 @@
                     } else if (day > daysInMonth) {
                         break;
                     } else {
+                        const dateId = `${year}-${month + 1}-${day}`;
                         cell.innerHTML = `<strong>${day}</strong>
-                            <input type="number" placeholder="Credit" id="credit-${year}-${month + 1}-${day}">
-                            <input type="number" placeholder="Debit" id="debit-${year}-${month + 1}-${day}">
-                            <input type="number" placeholder="End Cash" id="cash-${year}-${month + 1}-${day}">`;
+                            <input type="number" placeholder="Credit" id="credit-${dateId}">
+                            <input type="number" placeholder="Debit" id="debit-${dateId}">
+                            <div class="cash-balance" id="cash-${dateId}"></div>`;
+
+                        // Load saved data from Firestore
+                        loadDayData(dateId);
+
+                        // Add event listeners to save data to Firestore
+                        document.getElementById(`credit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
+                        document.getElementById(`debit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
+
                         day++;
                     }
 
                     container.appendChild(cell);
                 }
+            }
+            updateCashBalances();
+        }
+
+        function loadDayData(dateId) {
+            const docRef = db.collection('calendarData').doc(dateId);
+            docRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById(`credit-${dateId}`).value = data.credit || '';
+                    document.getElementById(`debit-${dateId}`).value = data.debit || '';
+                    updateCashBalances();
+                }
+            }).catch((error) => {
+                console.error("Error getting document:", error);
+            });
+        }
+
+        function saveDayData(dateId) {
+            const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
+            const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
+
+            db.collection('calendarData').doc(dateId).set({
+                credit: credit,
+                debit: debit
+            }).then(() => {
+                console.log("Document successfully written!");
+                updateCashBalances();
+            }).catch((error) => {
+                console.error("Error writing document: ", error);
+            });
+        }
+
+        function updateCashBalances() {
+            const initialCash = parseFloat(localStorage.getItem('initialCash')) || 0;
+            let runningBalance = initialCash;
+
+            const month = 4; // May is the 4th month (0-based index)
+            const year = 2024;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateId = `${year}-${month + 1}-${day}`;
+                const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
+                const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
+
+                runningBalance += credit - debit;
+                document.getElementById(`cash-${dateId}`).innerText = `Cash: $${runningBalance.toFixed(2)}`;
             }
         }
     </script>
@@ -160,6 +226,7 @@
                 <a href="home.html">Home</a>
                 <a href="details.html">View Details</a>
                 <a href="history.html">History</a>
+                <a href="calendar.html">Calendar</a>
             </div>
             <div class="menu-buttons">
                 <button class="theme-button" onclick="toggleTheme()">Theme</button>
@@ -174,3 +241,4 @@
     </div>
 </body>
 </html>
+
