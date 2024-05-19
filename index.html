@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Cockrum Finances</title>
+    <title>Summary - Cockrum Finances</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,10 +61,18 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        .content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #444;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -83,10 +91,16 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let stocksAndBonds = [];
+        let realEstate = [];
+        let miscAssets = [];
+        let liabilities = [];
 
         function logOff() {
             auth.signOut().then(() => {
-                window.location.href = 'login.html'; // Change to the login page URL
+                window.location.href = 'login.html';
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
@@ -95,12 +109,50 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    document.getElementById('content').style.display = 'block';
+                    loadData();
                 } else {
-                    window.location.href = 'login.html'; // Change to the login page URL
+                    window.location.href = 'login.html';
                 }
             });
         });
+
+        async function loadData() {
+            await loadCollection('stocks_and_bonds', stocksAndBonds);
+            await loadCollection('real_estate', realEstate);
+            await loadCollection('misc_assets', miscAssets);
+            await loadCollection('liabilities', liabilities);
+            updateSummary();
+        }
+
+        async function loadCollection(collection, dataArray) {
+            const snapshot = await db.collection(collection).get();
+            dataArray.length = 0;
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                dataArray.push(data);
+            });
+        }
+
+        function updateSummary() {
+            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
+            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
+            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
+            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
+            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
+            const netWorth = totalAssets - totalLiabilities;
+
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
+            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
     </script>
 </head>
 <body>
@@ -108,7 +160,7 @@
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div class="menu-links">
-                <a href="index.html">Home</a>
+                <a href="index.html">Summary</a>
                 <a href="details.html">View Details</a>
                 <a href="history.html">History</a>
                 <a href="calendar.html">Calendar</a>
@@ -118,9 +170,34 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content" class="content" style="display: none;">
-            <h2>Welcome to Cockrum Finances</h2>
-            <p>Use the menu to navigate through the application.</p>
+        <div id="content">
+            <h2>Summary</h2>
+            <table>
+                <tr>
+                    <th>Total Stocks & Bonds</th>
+                    <td id="total-stocks_and_bonds">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Real Estate</th>
+                    <td id="total-real_estate">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Misc. Assets</th>
+                    <td id="total-misc_assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Assets</th>
+                    <td id="total-assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Liabilities</th>
+                    <td id="total-liabilities">$0</td>
+                </tr>
+                <tr class="total">
+                    <th>Net Worth</th>
+                    <td id="net-worth">$0</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
