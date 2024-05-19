@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Details - Cockrum Finances</title>
+    <title>Monthly Calendar - Cockrum Finances</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,52 +61,32 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        .section {
+        .initial-balance {
             margin-bottom: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        table, th, td {
-            border: 1px solid #555;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #444;
-        }
-        .form-group {
-            display: flex;
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
             gap: 10px;
-            margin-bottom: 10px;
         }
-        .form-group input {
-            padding: 8px;
+        .day {
+            background: #444;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .day input {
+            width: 100%;
+            margin-bottom: 5px;
+            padding: 5px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
             color: #fff;
         }
-        .form-group button {
-            padding: 8px 16px;
-            background-color: #0f0;
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #0c0;
-        }
-        .delta-positive {
-            color: green;
-        }
-        .delta-negative {
-            color: red;
+        .day .cash-balance {
+            font-weight: bold;
+            margin-top: 5px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -127,14 +107,9 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let stocksAndBonds = [];
-        let realEstate = [];
-        let miscAssets = [];
-        let liabilities = [];
-
         function logOff() {
             auth.signOut().then(() => {
-                window.location.href = 'login.html'; // Change to the login page URL
+                window.location.href = 'index.html';
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
@@ -143,114 +118,103 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    loadData();
+                    generateCalendar();
                 } else {
-                    window.location.href = 'login.html'; // Change to the login page URL
+                    window.location.href = 'index.html';
                 }
+            });
+
+            document.getElementById('initial-cash').addEventListener('change', () => {
+                localStorage.setItem('initialCash', document.getElementById('initial-cash').value);
+                updateCashBalances();
             });
         });
 
-        async function loadData() {
-            await loadCollection('stocks_and_bonds', stocksAndBonds, updateTable);
-            await loadCollection('real_estate', realEstate, updateTable);
-            await loadCollection('misc_assets', miscAssets, updateTable);
-            await loadCollection('liabilities', liabilities, updateTable);
-            updateSummary();
-        }
+        function generateCalendar() {
+            const container = document.getElementById('calendar');
+            const month = 4; // May is the 4th month (0-based index)
+            const year = 2024;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDay = new Date(year, month, 1).getDay();
 
-        async function loadCollection(collection, dataArray, callback) {
-            const snapshot = await db.collection(collection).get();
-            dataArray.length = 0;
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                dataArray.push(data);
-            });
-            callback(collection, dataArray);
-        }
+            let day = 1;
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'day';
 
-        function updateTable(collection, dataArray) {
-            const tableBody = document.getElementById(`${collection}-table`).getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
+                    if (i === 0 && j < startDay) {
+                        cell.innerHTML = '';
+                    } else if (day > daysInMonth) {
+                        break;
+                    } else {
+                        const dateId = `${year}-${month + 1}-${day}`;
+                        cell.innerHTML = `<strong>${day}</strong>
+                            <input type="number" placeholder="Credit" id="credit-${dateId}">
+                            <input type="number" placeholder="Debit" id="debit-${dateId}">
+                            <div class="cash-balance" id="cash-${dateId}"></div>`;
 
-            dataArray.forEach((item, index) => {
-                const row = tableBody.insertRow();
-                row.insertCell(0).innerText = item.description;
-                const valueCell = row.insertCell(1);
-                valueCell.innerText = `$${item.value.toFixed(0)}`;
-                const delta = item.value - (item.previousValue || 0);
-                const deltaCell = document.createElement('span');
-                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${delta.toFixed(0)})`;
-                deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
-                deltaCell.style.fontSize = '0.8em';
-                deltaCell.style.fontStyle = 'italic';
-                valueCell.appendChild(deltaCell);
-                const actionCell = row.insertCell(2);
-                const editButton = document.createElement('button');
-                editButton.innerText = 'Edit';
-                editButton.onclick = () => editItem(collection, index, item.id);
-                const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Delete';
-                deleteButton.onclick = () => deleteItem(collection, index, item.id);
-                actionCell.appendChild(editButton);
-                actionCell.appendChild(deleteButton);
-            });
-        }
+                        // Load saved data from Firestore
+                        loadDayData(dateId);
 
-        function editItem(collection, index, id) {
-            const description = prompt('Enter new description:', stocksAndBonds[index].description);
-            const value = parseFloat(prompt('Enter new value:', stocksAndBonds[index].value));
-            if (description && !isNaN(value)) {
-                db.collection(collection).doc(id).update({
-                    description: description,
-                    value: value,
-                    previousValue: stocksAndBonds[index].value
-                }).then(() => {
-                    stocksAndBonds[index].description = description;
-                    stocksAndBonds[index].value = value;
-                    updateTable(collection, stocksAndBonds);
-                    updateSummary();
-                });
+                        // Add event listeners to save data to Firestore
+                        document.getElementById(`credit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
+                        document.getElementById(`debit-${dateId}`).addEventListener('change', () => saveDayData(dateId));
+
+                        day++;
+                    }
+
+                    container.appendChild(cell);
+                }
             }
+            updateCashBalances();
         }
 
-        async function deleteItem(collection, index, id) {
-            await db.collection(collection).doc(id).delete();
-            stocksAndBonds.splice(index, 1);
-            updateTable(collection, stocksAndBonds);
-            updateSummary();
+        function loadDayData(dateId) {
+            const docRef = db.collection('calendarData').doc(dateId);
+            docRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById(`credit-${dateId}`).value = data.credit || '';
+                    document.getElementById(`debit-${dateId}`).value = data.debit || '';
+                    updateCashBalances();
+                }
+            }).catch((error) => {
+                console.error("Error getting document:", error);
+            });
         }
 
-        async function addAsset(collection) {
-            const description = document.getElementById(`${collection}-description`).value;
-            const value = parseFloat(document.getElementById(`${collection}-value`).value);
-            if (description && !isNaN(value)) {
-                const newItem = { description, value };
-                const docRef = await db.collection(collection).add(newItem);
-                newItem.id = docRef.id;
-                newItem.previousValue = 0;
-                stocksAndBonds.push(newItem);
-                updateTable(collection, stocksAndBonds);
-                document.getElementById(`${collection}-description`).value = '';
-                document.getElementById(`${collection}-value`).value = '';
-                updateSummary();
+        function saveDayData(dateId) {
+            const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
+            const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
+
+            db.collection('calendarData').doc(dateId).set({
+                credit: credit,
+                debit: debit
+            }).then(() => {
+                console.log("Document successfully written!");
+                updateCashBalances();
+            }).catch((error) => {
+                console.error("Error writing document: ", error);
+            });
+        }
+
+        function updateCashBalances() {
+            const initialCash = parseFloat(localStorage.getItem('initialCash')) || 0;
+            let runningBalance = initialCash;
+
+            const month = 4; // May is the 4th month (0-based index)
+            const year = 2024;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateId = `${year}-${month + 1}-${day}`;
+                const credit = parseFloat(document.getElementById(`credit-${dateId}`).value) || 0;
+                const debit = parseFloat(document.getElementById(`debit-${dateId}`).value) || 0;
+
+                runningBalance += credit - debit;
+                document.getElementById(`cash-${dateId}`).innerText = `Cash: $${runningBalance.toFixed(0)}`;
             }
-        }
-
-        function updateSummary() {
-            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
-            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
-            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
-            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
-
-            document.getElementById('total-stocks_and_bonds').innerText = `$${totalStocksAndBonds.toFixed(0)}`;
-            document.getElementById('total-real_estate').innerText = `$${totalRealEstate.toFixed(0)}`;
-            document.getElementById('total-misc_assets').innerText = `$${totalMiscAssets.toFixed(0)}`;
-            document.getElementById('total-assets').innerText = `$${totalAssets.toFixed(0)}`;
-            document.getElementById('total-liabilities').innerText = `$${totalLiabilities.toFixed(0)}`;
-            document.getElementById('net-worth').innerText = `$${netWorth.toFixed(0)}`;
         }
     </script>
 </head>
@@ -269,121 +233,11 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content" style="flex: 1;">
-            <div class="section" id="stocks-and-bonds-section">
-                <h2>Stocks & Bonds</h2>
-                <table id="stocks_and_bonds-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Stocks & Bonds rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="stocks_and_bonds-description" placeholder="Description">
-                    <input type="number" id="stocks_and_bonds-value" placeholder="Value">
-                    <button onclick="addAsset('stocks_and_bonds')">Add Stocks & Bonds</button>
-                </div>
-            </div>
-
-            <div class="section" id="real-estate-section">
-                <h2>Real Estate</h2>
-                <table id="real_estate-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Real Estate rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="real_estate-description" placeholder="Description">
-                    <input type="number" id="real_estate-value" placeholder="Value">
-                    <button onclick="addAsset('real_estate')">Add Real Estate</button>
-                </div>
-            </div>
-
-            <div class="section" id="misc-assets-section">
-                <h2>Misc. Assets</h2>
-                <table id="misc_assets-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Misc. Assets rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="misc_assets-description" placeholder="Description">
-                    <input type="number" id="misc_assets-value" placeholder="Value">
-                    <button onclick="addAsset('misc_assets')">Add Misc. Assets</button>
-                </div>
-            </div>
-
-            <div class="section" id="liabilities-section">
-                <h2>Liabilities</h2>
-                <table id="liabilities-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Liability rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="liability-description" placeholder="Description">
-                    <input type="number" id="liability-value" placeholder="Value">
-                    <button onclick="addAsset('liabilities')">Add Liability</button>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>Summary</h2>
-                <table>
-                    <tr>
-                        <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities">$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
-            </div>
+        <div class="initial-balance">
+            <label for="initial-cash">Initial Cash Balance:</label>
+            <input type="number" id="initial-cash" placeholder="Enter initial cash balance">
         </div>
+        <div id="calendar" class="calendar"></div>
     </div>
 </body>
 </html>
