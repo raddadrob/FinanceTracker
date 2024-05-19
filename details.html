@@ -134,7 +134,7 @@
 
         function logOff() {
             auth.signOut().then(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html'; // Change to the login page URL
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
@@ -145,7 +145,7 @@
                 if (user) {
                     loadData();
                 } else {
-                    window.location.href = 'index.html';
+                    window.location.href = 'login.html'; // Change to the login page URL
                 }
             });
         });
@@ -387,6 +387,7 @@
     </div>
 </body>
 </html>
+
 
 
 
