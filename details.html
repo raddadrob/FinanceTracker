@@ -190,10 +190,10 @@
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const valueCell = row.insertCell(1);
-                valueCell.innerText = `$${item.value.toFixed(0)}`;
+                valueCell.innerText = `$${formatNumber(item.value)}`;
                 const delta = item.value - (item.previousValue || 0);
                 const deltaCell = document.createElement('span');
-                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${delta.toFixed(0)})`;
+                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
                 deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
                 deltaCell.style.fontSize = '0.8em';
                 deltaCell.style.fontStyle = 'italic';
@@ -209,6 +209,10 @@
                 actionCell.appendChild(editButton);
                 actionCell.appendChild(deleteButton);
             });
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
         function editItem(collection, index, id) {
@@ -254,12 +258,12 @@
             const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
             const netWorth = totalAssets - totalLiabilities;
 
-            document.getElementById('total-stocks_and_bonds').innerText = `$${totalStocksAndBonds.toFixed(0)}`;
-            document.getElementById('total-real_estate').innerText = `$${totalRealEstate.toFixed(0)}`;
-            document.getElementById('total-misc_assets').innerText = `$${totalMiscAssets.toFixed(0)}`;
-            document.getElementById('total-assets').innerText = `$${totalAssets.toFixed(0)}`;
-            document.getElementById('total-liabilities').innerText = `$${totalLiabilities.toFixed(0)}`;
-            document.getElementById('net-worth').innerText = `$${netWorth.toFixed(0)}`;
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
+            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
         function getItem(collection, index) {
@@ -411,6 +415,7 @@
     </div>
 </body>
 </html>
+
 
 
 
