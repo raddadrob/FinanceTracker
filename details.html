@@ -66,18 +66,26 @@
         .menu-bar {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+        }
+        .menu-links {
+            display: flex;
+            gap: 15px;
         }
         .menu-bar a {
             color: var(--link-color);
             text-decoration: none;
-            margin: 0 15px;
             padding: 10px 20px;
             background: var(--link-bg);
             border-radius: 4px;
         }
         .menu-bar a:hover {
             background: var(--link-hover-bg);
+        }
+        .menu-buttons {
+            display: flex;
+            gap: 10px;
         }
         .logoff-button, .theme-button {
             background: var(--button-bg);
@@ -470,12 +478,14 @@
     <div id="finance-tracker" class="container">
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
-            <div>
+            <div class="menu-links">
                 <a href="home.html">Home</a>
                 <a href="details.html">View Details</a>
             </div>
-            <button class="logoff-button" onclick="logOff()">Log Off</button>
-            <button class="theme-button" onclick="toggleTheme()">Theme</button>
+            <div class="menu-buttons">
+                <button class="theme-button" onclick="toggleTheme()">Theme</button>
+                <button class="logoff-button" onclick="logOff()">Log Off</button>
+            </div>
         </div>
         <div id="content" style="flex: 1; display: none;">
             <div class="section" id="stocks-and-bonds-section">
@@ -607,6 +617,7 @@
     </div>
 </body>
 </html>
+
 
 
 
