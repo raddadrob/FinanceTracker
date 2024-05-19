@@ -67,12 +67,11 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             margin-bottom: 20px;
         }
-        table, th, td {
-            border: 1px solid #555;
-        }
         th, td {
+            border: 1px solid #555;
             padding: 8px;
             text-align: left;
         }
@@ -107,6 +106,19 @@
         }
         .delta-negative {
             color: red;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 60%;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 20%;
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 20%;
+            text-align: center;
+        }
+        button {
+            margin: 2px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -399,7 +411,6 @@
     </div>
 </body>
 </html>
-
 
 
 
