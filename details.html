@@ -42,7 +42,7 @@
         .menu-bar a:hover {
             background: #0c0;
         }
-        .logoff-button {
+        .logoff-button, .theme-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -50,7 +50,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover {
+        .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
         .section {
@@ -451,11 +451,11 @@
                     .menu-bar a:hover {
                         background: #ccc;
                     }
-                    .logoff-button {
+                    .logoff-button, .theme-button {
                         background: #00f;
                         color: #fff;
                     }
-                    .logoff-button:hover {
+                    .logoff-button:hover, .theme-button:hover {
                         background: #0057e7;
                     }
                     th {
@@ -498,11 +498,11 @@
                     .menu-bar a:hover {
                         background: #0c0;
                     }
-                    .logoff-button {
+                    .logoff-button, .theme-button {
                         background: #0f0;
                         color: #000;
                     }
-                    .logoff-button:hover {
+                    .logoff-button:hover, .theme-button:hover {
                         background: #0c0;
                     }
                     th {
@@ -528,7 +528,7 @@
                 <a href="details.html">View Details</a>
             </div>
             <button class="logoff-button" onclick="logOff()">Log Off</button>
-            <button class="logoff-button" onclick="toggleTheme()">Theme</button>
+            <button class="theme-button" onclick="toggleTheme()">Theme</button>
         </div>
         <div id="content" style="flex: 1; display: none;">
             <div class="section" id="stocks-and-bonds-section">
