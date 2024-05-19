@@ -37,7 +37,7 @@
             --button-hover-bg: #0057e7;
             --table-border: #ccc;
             --table-heading-bg: #ccc;
-            --delta-positive: #00f;
+            --delta-positive: #0f0;
             --delta-negative: #f00;
         }
 
@@ -411,21 +411,22 @@
         let promptTimer;
         let countdownTimer;
         let countdownElement;
+        let popup;
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             clearTimeout(promptTimer);
             clearInterval(countdownTimer);
-            if (countdownElement) {
-                countdownElement.remove();
-                countdownElement = null;
+            if (popup) {
+                popup.remove();
+                popup = null;
             }
             startInactivityTimer();
         }
 
         function startInactivityTimer() {
             inactivityTimer = setTimeout(() => {
-                const popup = document.createElement('div');
+                popup = document.createElement('div');
                 popup.style.position = 'fixed';
                 popup.style.top = '50%';
                 popup.style.left = '50%';
@@ -617,6 +618,7 @@
     </div>
 </body>
 </html>
+
 
 
 
