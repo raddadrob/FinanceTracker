@@ -4,27 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cockrum Finances</title>
-    <style id="theme-style">
+    <style>
+        :root {
+            --background-color: #000;
+            --text-color: #fff;
+            --container-bg: #333;
+            --container-text: #fff;
+            --heading-color: #0f0;
+            --link-color: #0f0;
+            --link-bg: #444;
+            --link-hover-bg: #0c0;
+            --button-bg: #0f0;
+            --button-text: #000;
+            --button-hover-bg: #0c0;
+            --table-border: #555;
+            --table-heading-bg: #444;
+            --delta-positive: #0f0;
+            --delta-negative: #f00;
+        }
+
+        [data-theme='light'] {
+            --background-color: #fff;
+            --text-color: #000;
+            --container-bg: #eee;
+            --container-text: #000;
+            --heading-color: #00f;
+            --link-color: #00f;
+            --link-bg: #ddd;
+            --link-hover-bg: #ccc;
+            --button-bg: #00f;
+            --button-text: #fff;
+            --button-hover-bg: #0057e7;
+            --table-border: #ccc;
+            --table-heading-bg: #ccc;
+            --delta-positive: #00f;
+            --delta-negative: #f00;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #333;
+            background: var(--container-bg);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            color: var(--container-text);
         }
         h1 {
             text-align: center;
-            color: #0f0;
+            color: var(--heading-color);
         }
         .menu-bar {
             display: flex;
@@ -32,33 +69,33 @@
             margin-bottom: 20px;
         }
         .menu-bar a {
-            color: #0f0;
+            color: var(--link-color);
             text-decoration: none;
             margin: 0 15px;
             padding: 10px 20px;
-            background: #444;
+            background: var(--link-bg);
             border-radius: 4px;
         }
         .menu-bar a:hover {
-            background: #0c0;
+            background: var(--link-hover-bg);
         }
         .logoff-button, .theme-button {
-            background: #0f0;
-            color: #000;
+            background: var(--button-bg);
+            color: var(--button-text);
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
         .logoff-button:hover, .theme-button:hover {
-            background: #0c0;
+            background: var(--button-hover-bg);
         }
         .section {
             margin-bottom: 20px;
         }
         .section h2 {
             margin-top: 0;
-            color: #0f0;
+            color: var(--heading-color);
         }
         table {
             width: 100%;
@@ -66,14 +103,14 @@
             margin-bottom: 20px;
         }
         table, th, td {
-            border: 1px solid #555;
+            border: 1px solid var(--table-border);
         }
         th, td {
             padding: 8px;
             text-align: left;
         }
         th {
-            background-color: #444;
+            background-color: var(--table-heading-bg);
         }
         .total {
             font-weight: bold;
@@ -92,22 +129,22 @@
         }
         .form-group input {
             padding: 8px;
-            border: 1px solid #555;
+            border: 1px solid var(--table-border);
             border-radius: 4px;
-            background: #222;
-            color: #fff;
+            background: var(--table-heading-bg);
+            color: var(--text-color);
         }
         .form-group button {
             padding: 8px 16px;
-            background-color: #0f0;
-            color: #000;
+            background-color: var(--button-bg);
+            color: var(--button-text);
             border: none;
             border-radius: 4px;
             cursor: pointer;
             margin-left: 10px;
         }
         .form-group button:hover {
-            background-color: #0c0;
+            background-color: var(--button-hover-bg);
         }
         .action-buttons {
             display: flex;
@@ -119,10 +156,10 @@
             font-size: 90%; /* 2 points smaller than the base font size */
         }
         .delta-positive {
-            color: #0f0;
+            color: var(--delta-positive);
         }
         .delta-negative {
-            color: #f00;
+            color: var(--delta-negative);
         }
         .aligned-table th, .aligned-table td {
             width: 33.33%;
@@ -420,101 +457,11 @@
 
         // Theme Toggle
         function toggleTheme() {
-            const themeStyle = document.getElementById('theme-style');
-            if (themeStyle.innerHTML.includes('background-color: #000')) {
-                themeStyle.innerHTML = `
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #fff;
-                        color: #000;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .container {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        background: #eee;
-                        padding: 20px;
-                        border-radius: 8px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    h1 {
-                        text-align: center;
-                        color: #00f;
-                    }
-                    .menu-bar a {
-                        color: #00f;
-                        background: #ddd;
-                    }
-                    .menu-bar a:hover {
-                        background: #ccc;
-                    }
-                    .logoff-button, .theme-button {
-                        background: #00f;
-                        color: #fff;
-                    }
-                    .logoff-button:hover, .theme-button:hover {
-                        background: #0057e7;
-                    }
-                    th {
-                        background-color: #ccc;
-                    }
-                    .delta-positive {
-                        color: #00f;
-                    }
-                    .delta-negative {
-                        color: #f00;
-                    }
-                `;
+            const root = document.documentElement;
+            if (root.getAttribute('data-theme') === 'light') {
+                root.removeAttribute('data-theme');
             } else {
-                themeStyle.innerHTML = `
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #000;
-                        color: #fff;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .container {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        background: #333;
-                        padding: 20px;
-                        border-radius: 8px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    h1 {
-                        text-align: center;
-                        color: #0f0;
-                    }
-                    .menu-bar a {
-                        color: #0f0;
-                        background: #444;
-                    }
-                    .menu-bar a:hover {
-                        background: #0c0;
-                    }
-                    .logoff-button, .theme-button {
-                        background: #0f0;
-                        color: #000;
-                    }
-                    .logoff-button:hover, .theme-button:hover {
-                        background: #0c0;
-                    }
-                    th {
-                        background-color: #444;
-                    }
-                    .delta-positive {
-                        color: #0f0;
-                    }
-                    .delta-negative {
-                        color: #f00;
-                    }
-                `;
+                root.setAttribute('data-theme', 'light');
             }
         }
     </script>
@@ -660,6 +607,7 @@
     </div>
 </body>
 </html>
+
 
 
 
