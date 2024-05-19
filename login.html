@@ -54,6 +54,19 @@
         .form-group button:hover {
             background-color: #0c0;
         }
+        .toggle-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .toggle-button:hover {
+            background-color: #555;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -71,9 +84,18 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        const invitationCode = "smartypants71";  // Define the invitation code
+
+        function toggleForm() {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
+        }
+
         function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password)
                 .then(() => {
                     window.location.href = 'index.html';
@@ -83,21 +105,62 @@
                     alert('Error signing in: ' + error.message);
                 });
         }
+
+        function register() {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const inviteCode = document.getElementById('invitation-code').value;
+
+            if (inviteCode !== invitationCode) {
+                alert('Invalid invitation code.');
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'index.html';
+                })
+                .catch((error) => {
+                    console.error('Error registering:', error);
+                    alert('Error registering: ' + error.message);
+                });
+        }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Login</h1>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" placeholder="Enter your email">
+        <div id="login-form">
+            <div class="form-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" placeholder="Enter your password">
+            </div>
+            <div class="form-group">
+                <button onclick="login()">Login</button>
+            </div>
+            <button class="toggle-button" onclick="toggleForm()">Register as a new user</button>
         </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" placeholder="Enter your password">
-        </div>
-        <div class="form-group">
-            <button onclick="login()">Login</button>
+        <div id="register-form" style="display: none;">
+            <div class="form-group">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" placeholder="Enter your password">
+            </div>
+            <div class="form-group">
+                <label for="invitation-code">Invitation Code:</label>
+                <input type="text" id="invitation-code" placeholder="Enter the invitation code">
+            </div>
+            <div class="form-group">
+                <button onclick="register()">Register</button>
+            </div>
+            <button class="toggle-button" onclick="toggleForm()">Back to Login</button>
         </div>
     </div>
 </body>
