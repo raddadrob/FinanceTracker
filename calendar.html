@@ -181,8 +181,10 @@
         });
 
         function setInitialCashBalance(event) {
-            initialCashBalance = parseFloat(event.target.value);
+            const value = parseFloat(event.target.value);
+            initialCashBalance = value || 0;
             db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).set({ balance: initialCashBalance });
+            event.target.value = initialCashBalance ? `$${formatNumber(initialCashBalance)}` : '';
             calculateBalances();
         }
 
@@ -221,7 +223,10 @@
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
                 initialCashBalance = initialBalanceDoc.data().balance;
-                document.getElementById('initial-cash-balance').value = initialCashBalance;
+                document.getElementById('initial-cash-balance').value = `$${formatNumber(initialCashBalance)}`;
+            } else {
+                initialCashBalance = 0;
+                document.getElementById('initial-cash-balance').value = '';
             }
 
             // Clear existing calendar
@@ -259,6 +264,7 @@
 
         function renderMonthSelector() {
             const monthSelector = document.querySelector('.month-selector');
+            monthSelector.innerHTML = '';
             monthNames.forEach((monthName, index) => {
                 const monthDiv = document.createElement('div');
                 monthDiv.innerText = monthName;
@@ -303,7 +309,7 @@
             </div>
             <div class="form-group">
                 <label for="initial-cash-balance">Initial Cash Balance:</label>
-                <input type="number" id="initial-cash-balance" placeholder="Enter initial cash balance">
+                <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
             </div>
             <div class="calendar"></div>
             <div class="ending-balance">
@@ -313,6 +319,7 @@
     </div>
 </body>
 </html>
+
 
 
 
