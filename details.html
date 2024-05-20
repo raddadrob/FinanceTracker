@@ -253,7 +253,7 @@
             const description = document.getElementById(`${collection}-description`).value;
             const value = parseFloat(document.getElementById(`${collection}-value`).value);
             if (description && !isNaN(value)) {
-                const newItem = { description, value, previousValue: 0 };
+                const newItem = { description, value: collection === 'liabilities' ? -value : value, previousValue: 0 };
                 await db.collection(collection).add(newItem);
                 loadData(); // Reload data to update the table and summary
                 document.getElementById(`${collection}-description`).value = '';
