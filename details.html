@@ -120,10 +120,6 @@
             width: 15%;
             text-align: center;
         }
-        th:nth-child(5), td:nth-child(5) {
-            width: 10%;
-            text-align: center;
-        }
         button {
             margin: 2px;
         }
@@ -196,7 +192,9 @@
             dataArray.forEach((item, index) => {
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
-                const valueCell = row.insertCell(1);
+                const previousValueCell = row.insertCell(1);
+                previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
+                const valueCell = row.insertCell(2);
                 valueCell.innerText = `$${formatNumber(item.value)}`;
                 const delta = item.value - (item.previousValue || 0);
                 const deltaCell = document.createElement('span');
@@ -205,8 +203,6 @@
                 deltaCell.style.fontSize = '0.8em';
                 deltaCell.style.fontStyle = 'italic';
                 valueCell.appendChild(deltaCell);
-                const previousValueCell = row.insertCell(2);
-                previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
                 const actionCell = row.insertCell(3);
                 actionCell.style.textAlign = 'center';
                 const editButton = document.createElement('button');
@@ -312,8 +308,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Previous Value</th>
+                            <th>Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -334,8 +330,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Previous Value</th>
+                            <th>Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -356,8 +352,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Previous Value</th>
+                            <th>Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -378,8 +374,8 @@
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Value</th>
                             <th>Previous Value</th>
+                            <th>Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -411,11 +407,11 @@
                     </tr>
                     <tr>
                         <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
+                        <td id="total-assets" style="text-decoration: underline;">$0</td>
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities">$0</td>
+                        <td id="total-liabilities" style="text-decoration: underline double;">$0</td>
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
@@ -427,6 +423,7 @@
     </div>
 </body>
 </html>
+
 
 
 
