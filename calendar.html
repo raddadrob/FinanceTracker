@@ -152,6 +152,7 @@
 
         function setInitialCashBalance(event) {
             initialCashBalance = parseFloat(event.target.value);
+            db.collection('calendar').doc('initial_balance').set({ balance: initialCashBalance });
             calculateBalances();
         }
 
@@ -165,19 +166,34 @@
                 const debit = parseFloat(debitInput.value) || 0;
                 const cashBalance = previousDayBalance + credit - debit;
                 cashBalances[day] = cashBalance;
-                document.getElementById(`cash-${day}`).innerText = `$${cashBalance.toFixed(2)}`;
+                document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
+                creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
+                debitInput.value = debit !== 0 ? `-$${formatNumber(debit)}` : '';
                 previousDayBalance = cashBalance;
+
+                db.collection('calendar').doc(`day-${day}`).set({
+                    credit: credit,
+                    debit: debit,
+                    cash: cashBalance
+                });
             }
-            document.getElementById('ending-balance').innerText = `Ending Balance: $${previousDayBalance.toFixed(2)}`;
+            document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
         }
 
-        function renderCalendar() {
+        async function renderCalendar() {
             const calendar = document.querySelector('.calendar');
             const month = 'May 2024';
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(2024, 5, 0).getDate();
             const startDay = new Date(2024, 4, 1).getDay(); // May 1, 2024
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            const initialBalanceDoc = await db.collection('calendar').doc('initial_balance').get();
+            if (initialBalanceDoc.exists) {
+                initialCashBalance = initialBalanceDoc.data().balance;
+                document.getElementById('initial-cash-balance').value = initialCashBalance;
+            }
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayOfWeek = weekdays[(startDay + day - 1) % 7];
                 const dayElement = document.createElement('div');
@@ -189,7 +205,21 @@
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
+
+                const dayDoc = await db.collection('calendar').doc(`day-${day}`).get();
+                if (dayDoc.exists) {
+                    const data = dayDoc.data();
+                    document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
+                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(data.debit)}` : '';
+                    document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
+                }
             }
+
+            calculateBalances();
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
     </script>
 </head>
