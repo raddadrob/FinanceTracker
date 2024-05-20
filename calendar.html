@@ -125,6 +125,17 @@
             border-radius: 4px;
             text-align: center;
         }
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .weekday {
+            text-align: center;
+            font-weight: bold;
+            color: #0f0;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -226,11 +237,10 @@
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayOfWeek = weekdays[(startDay + day - 1) % 7];
                 const dayElement = document.createElement('div');
                 dayElement.classList.add('day');
                 dayElement.innerHTML = `
-                    <header>${day} (${dayOfWeek})</header>
+                    <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
@@ -288,6 +298,15 @@
                 <label for="initial-cash-balance">Initial Cash Balance:</label>
                 <input type="number" id="initial-cash-balance" placeholder="Enter initial cash balance">
             </div>
+            <div class="weekdays">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+            </div>
             <div class="calendar"></div>
             <div class="ending-balance">
                 <span id="ending-balance">Ending Balance: $0</span>
@@ -296,6 +315,7 @@
     </div>
 </body>
 </html>
+
 
 
 
