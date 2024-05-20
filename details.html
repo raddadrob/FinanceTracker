@@ -212,8 +212,9 @@
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const valueCell = row.insertCell(1);
+                const deltaValue = item.value > 0 ? `+${formatNumber(item.value)}` : `${formatNumber(item.value)}`;
                 valueCell.innerHTML = `$${formatNumber(Math.abs(item.value))}` +
-                    ` <span class="delta" style="color: ${type === 'assets' ? 'green' : 'red'};">(${formatNumber(item.value) > 0 ? '+' : ''}${formatNumber(item.value)})</span>`;
+                    ` <span class="delta" style="color: ${type === 'assets' ? 'green' : 'red'};">(${deltaValue})</span>`;
                 const actionCell = row.insertCell(2);
                 const editButton = document.createElement('button');
                 editButton.innerText = 'Edit';
@@ -225,8 +226,7 @@
                 actionCell.appendChild(deleteButton);
             });
 
-            document.getElementById(`total-${type}`).innerText = `$${formatNumber(Math.abs(total))}` +
-                ` <span class="delta" style="color: ${type === 'assets' ? 'green' : 'red'};">(${formatNumber(total) > 0 ? '+' : ''}${formatNumber(total)})</span>`;
+            document.getElementById(`total-${type}`).innerText = `$${formatNumber(Math.abs(total))}`;
             updateSummary();
         }
 
@@ -266,10 +266,8 @@
             const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
             const netWorth = totalAssets - totalLiabilities;
 
-            document.getElementById('total-assets').innerText = `$${formatNumber(Math.abs(totalAssets))}` +
-                ` <span class="delta" style="color: green;">(${formatNumber(totalAssets) > 0 ? '+' : ''}${formatNumber(totalAssets)})</span>`;
-            document.getElementById('total-liabilities').innerText = `($${formatNumber(Math.abs(totalLiabilities))})` +
-                ` <span class="delta" style="color: red;">(${formatNumber(totalLiabilities) > 0 ? '+' : ''}${formatNumber(totalLiabilities)})</span>`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(Math.abs(totalAssets))}`;
+            document.getElementById('total-liabilities').innerText = `($${formatNumber(Math.abs(totalLiabilities))})`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
@@ -396,6 +394,7 @@
     </div>
 </body>
 </html>
+
 
 
 
