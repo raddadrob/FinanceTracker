@@ -124,10 +124,10 @@
         button {
             margin: 2px;
         }
-        .total-assets {
+        .total-assets-value {
             text-decoration: underline;
         }
-        .total-liabilities {
+        .total-liabilities-value {
             text-decoration: underline double;
         }
     </style>
@@ -269,7 +269,9 @@
             document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-assets').classList.add('total-assets-value');
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').classList.add('total-liabilities-value');
             document.getElementById('total-liabilities').innerText = `($${formatNumber(totalLiabilities)})`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
@@ -394,23 +396,23 @@
                 <table>
                     <tr>
                         <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds" class="total-assets">$0</td>
+                        <td id="total-stocks_and_bonds">$0</td>
                     </tr>
                     <tr>
                         <th>Total Real Estate</th>
-                        <td id="total-real_estate" class="total-assets">$0</td>
+                        <td id="total-real_estate">$0</td>
                     </tr>
                     <tr>
                         <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets" class="total-assets">$0</td>
+                        <td id="total-misc_assets">$0</td>
                     </tr>
                     <tr>
                         <th>Total Assets</th>
-                        <td id="total-assets" class="total-assets">$0</td>
+                        <td id="total-assets" class="total-assets-value">$0</td>
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities" class="total-liabilities">$0</td>
+                        <td id="total-liabilities" class="total-liabilities-value">$0</td>
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
@@ -422,6 +424,7 @@
     </div>
 </body>
 </html>
+
 
 
 
