@@ -64,33 +64,19 @@
         .section {
             margin-bottom: 20px;
         }
-        .section h2 {
-            margin-top: 0;
-            color: #0f0;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             margin-bottom: 20px;
         }
-        table, th, td {
-            border: 1px solid #555;
-        }
         th, td {
+            border: 1px solid #555;
             padding: 8px;
             text-align: left;
         }
         th {
             background-color: #444;
-        }
-        .total {
-            font-weight: bold;
-        }
-        .total-assets {
-            text-decoration: underline;
-        }
-        .total-liabilities {
-            text-decoration: underline double;
         }
         .form-group {
             display: flex;
@@ -98,7 +84,6 @@
             margin-bottom: 10px;
         }
         .form-group input {
-            flex: 2;
             padding: 8px;
             border: 1px solid #555;
             border-radius: 4px;
@@ -116,12 +101,34 @@
         .form-group button:hover {
             background-color: #0c0;
         }
-        .action-buttons button {
-            margin-left: 5px;
-        }
-        .delta {
+        .delta-positive {
+            color: green;
             font-style: italic;
             font-weight: bold;
+        }
+        .delta-negative {
+            color: red;
+            font-style: italic;
+            font-weight: bold;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 60%;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 20%;
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 20%;
+            text-align: center;
+        }
+        button {
+            margin: 2px;
+        }
+        .total-assets {
+            text-decoration: underline;
+        }
+        .total-liabilities {
+            text-decoration: underline double;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -142,7 +149,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let stocksBonds = [];
+        let stocksAndBonds = [];
         let realEstate = [];
         let miscAssets = [];
         let liabilities = [];
@@ -166,180 +173,125 @@
         });
 
         async function loadData() {
-            const stocksBondsSnapshot = await db.collection('stocksBonds').get();
-            stocksBonds = stocksBondsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const realEstateSnapshot = await db.collection('realEstate').get();
-            realEstate = realEstateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const miscAssetsSnapshot = await db.collection('miscAssets').get();
-            miscAssets = miscAssetsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const liabilitiesSnapshot = await db.collection('liabilities').get();
-            liabilities = liabilitiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            updateTable('stocksBonds', stocksBonds);
-            updateTable('realEstate', realEstate);
-            updateTable('miscAssets', miscAssets);
-            updateTable('liabilities', liabilities);
-        }
-
-        async function addStockBond() {
-            const description = document.getElementById('stock-bond-description').value;
-            const value = parseFloat(document.getElementById('stock-bond-value').value);
-
-            if (description && !isNaN(value)) {
-                const newStockBond = { description, value };
-                const docRef = await db.collection('stocksBonds').add(newStockBond);
-                newStockBond.id = docRef.id;
-                stocksBonds.push(newStockBond);
-                updateTable('stocksBonds', stocksBonds);
-                document.getElementById('stock-bond-description').value = '';
-                document.getElementById('stock-bond-value').value = '';
-            }
-        }
-
-        async function addRealEstate() {
-            const description = document.getElementById('real-estate-description').value;
-            const value = parseFloat(document.getElementById('real-estate-value').value);
-
-            if (description && !isNaN(value)) {
-                const newRealEstate = { description, value };
-                const docRef = await db.collection('realEstate').add(newRealEstate);
-                newRealEstate.id = docRef.id;
-                realEstate.push(newRealEstate);
-                updateTable('realEstate', realEstate);
-                document.getElementById('real-estate-description').value = '';
-                document.getElementById('real-estate-value').value = '';
-            }
-        }
-
-        async function addMiscAsset() {
-            const description = document.getElementById('misc-asset-description').value;
-            const value = parseFloat(document.getElementById('misc-asset-value').value);
-
-            if (description && !isNaN(value)) {
-                const newMiscAsset = { description, value };
-                const docRef = await db.collection('miscAssets').add(newMiscAsset);
-                newMiscAsset.id = docRef.id;
-                miscAssets.push(newMiscAsset);
-                updateTable('miscAssets', miscAssets);
-                document.getElementById('misc-asset-description').value = '';
-                document.getElementById('misc-asset-value').value = '';
-            }
-        }
-
-        async function addLiability() {
-            const description = document.getElementById('liability-description').value;
-            const value = parseFloat(document.getElementById('liability-value').value);
-
-            if (description && !isNaN(value)) {
-                const newLiability = { description, value };
-                const docRef = await db.collection('liabilities').add(newLiability);
-                newLiability.id = docRef.id;
-                liabilities.push(newLiability);
-                updateTable('liabilities', liabilities);
-                document.getElementById('liability-description').value = '';
-                document.getElementById('liability-value').value = '';
-            }
-        }
-
-        function updateTable(type, items) {
-            const tableBody = document.getElementById(`${type}-table`).getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-
-            let total = 0;
-            items.forEach((item, index) => {
-                total += item.value;
-                const row = tableBody.insertRow();
-                row.insertCell(0).innerText = item.description;
-                const valueCell = row.insertCell(1);
-                const deltaValue = item.value > 0 ? `+${formatNumber(item.value)}` : `${formatNumber(item.value)}`;
-                valueCell.innerHTML = `$${formatNumber(Math.abs(item.value))}` +
-                    ` <span class="delta" style="color: ${type === 'liabilities' ? 'red' : 'green'};">(${deltaValue})</span>`;
-                const actionCell = row.insertCell(2);
-                const editButton = document.createElement('button');
-                editButton.innerText = 'Edit';
-                editButton.onclick = () => editItem(type, index, item.id);
-                const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Delete';
-                deleteButton.onclick = () => deleteItem(type, index, item.id);
-                actionCell.appendChild(editButton);
-                actionCell.appendChild(deleteButton);
-            });
-
-            document.getElementById(`total-${type}`).innerText = `$${formatNumber(Math.abs(total))}`;
+            await loadCollection('stocks_and_bonds', stocksAndBonds, updateTable);
+            await loadCollection('real_estate', realEstate, updateTable);
+            await loadCollection('misc_assets', miscAssets, updateTable);
+            await loadCollection('liabilities', liabilities, updateTable);
             updateSummary();
         }
 
-        async function editItem(type, index, id) {
-            const description = prompt("Enter new description:", type === 'stocksBonds' ? stocksBonds[index].description : type === 'realEstate' ? realEstate[index].description : type === 'miscAssets' ? miscAssets[index].description : liabilities[index].description);
-            const value = parseFloat(prompt("Enter new value:", type === 'stocksBonds' ? stocksBonds[index].value : type === 'realEstate' ? realEstate[index].value : type === 'miscAssets' ? miscAssets[index].value : liabilities[index].value));
+        async function loadCollection(collection, dataArray, callback) {
+            const snapshot = await db.collection(collection).get();
+            dataArray.length = 0;
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                dataArray.push(data);
+            });
+            dataArray.sort((a, b) => b.value - a.value);  // Sort by value descending
+            callback(collection, dataArray);
+        }
 
+        function updateTable(collection, dataArray) {
+            const tableBody = document.getElementById(`${collection}-table`).getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            dataArray.forEach((item, index) => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).innerText = item.description;
+                const valueCell = row.insertCell(1);
+                valueCell.innerText = `$${formatNumber(item.value)}`;
+                const delta = item.value - (item.previousValue || 0);
+                const deltaCell = document.createElement('span');
+                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
+                deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
+                valueCell.appendChild(deltaCell);
+                const actionCell = row.insertCell(2);
+                actionCell.style.textAlign = 'center';
+                const editButton = document.createElement('button');
+                editButton.innerText = 'Edit';
+                editButton.onclick = () => editItem(collection, index, item.id);
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Delete';
+                deleteButton.onclick = () => deleteItem(collection, index, item.id);
+                actionCell.appendChild(editButton);
+                actionCell.appendChild(deleteButton);
+            });
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function editItem(collection, index, id) {
+            const item = getItem(collection, index);
+            const description = prompt('Enter new description:', item.description);
+            const value = parseFloat(prompt('Enter new value:', item.value));
             if (description && !isNaN(value)) {
-                if (type === 'stocksBonds') {
-                    stocksBonds[index].description = description;
-                    stocksBonds[index].value = value;
-                    await db.collection('stocksBonds').doc(id).update({ description, value });
-                    updateTable('stocksBonds', stocksBonds);
-                } else if (type === 'realEstate') {
-                    realEstate[index].description = description;
-                    realEstate[index].value = value;
-                    await db.collection('realEstate').doc(id).update({ description, value });
-                    updateTable('realEstate', realEstate);
-                } else if (type === 'miscAssets') {
-                    miscAssets[index].description = description;
-                    miscAssets[index].value = value;
-                    await db.collection('miscAssets').doc(id).update({ description, value });
-                    updateTable('miscAssets', miscAssets);
-                } else if (type === 'liabilities') {
-                    liabilities[index].description = description;
-                    liabilities[index].value = value;
-                    await db.collection('liabilities').doc(id).update({ description, value });
-                    updateTable('liabilities', liabilities);
-                }
+                db.collection(collection).doc(id).update({
+                    description: description,
+                    value: value,
+                    previousValue: item.value
+                }).then(() => {
+                    item.description = description;
+                    item.value = value;
+                    loadData(); // Reload data to update the table and summary
+                });
             }
         }
 
-        async function deleteItem(type, index, id) {
-            if (type === 'stocksBonds') {
-                await db.collection('stocksBonds').doc(id).delete();
-                stocksBonds.splice(index, 1);
-                updateTable('stocksBonds', stocksBonds);
-            } else if (type === 'realEstate') {
-                await db.collection('realEstate').doc(id).delete();
-                realEstate.splice(index, 1);
-                updateTable('realEstate', realEstate);
-            } else if (type === 'miscAssets') {
-                await db.collection('miscAssets').doc(id).delete();
-                miscAssets.splice(index, 1);
-                updateTable('miscAssets', miscAssets);
-            } else if (type === 'liabilities') {
-                await db.collection('liabilities').doc(id).delete();
-                liabilities.splice(index, 1);
-                updateTable('liabilities', liabilities);
+        async function deleteItem(collection, index, id) {
+            await db.collection(collection).doc(id).delete();
+            loadData(); // Reload data to update the table and summary
+        }
+
+        async function addAsset(collection) {
+            const description = document.getElementById(`${collection}-description`).value;
+            const value = parseFloat(document.getElementById(`${collection}-value`).value);
+            if (description && !isNaN(value)) {
+                const newItem = { description, value, previousValue: 0 };
+                const docRef = await db.collection(collection).add(newItem);
+                newItem.id = docRef.id;
+                loadData(); // Reload data to update the table and summary
+                document.getElementById(`${collection}-description`).value = '';
+                document.getElementById(`${collection}-value`).value = '';
             }
         }
 
         function updateSummary() {
-            const totalStocksBonds = stocksBonds.reduce((sum, item) => sum + item.value, 0);
+            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
             const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
             const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
             const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
-            const totalAssets = totalStocksBonds + totalRealEstate + totalMiscAssets;
+            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
             const netWorth = totalAssets - totalLiabilities;
 
-            document.getElementById('total-stocks-bonds').innerText = `$${formatNumber(Math.abs(totalStocksBonds))}`;
-            document.getElementById('total-real-estate').innerText = `$${formatNumber(Math.abs(totalRealEstate))}`;
-            document.getElementById('total-misc-assets').innerText = `$${formatNumber(Math.abs(totalMiscAssets))}`;
-            document.getElementById('total-assets').innerText = `$${formatNumber(Math.abs(totalAssets))}`;
-            document.getElementById('total-liabilities').innerText = `($${formatNumber(Math.abs(totalLiabilities))})`;
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `($${formatNumber(totalLiabilities)})`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
-        function formatNumber(number) {
-            return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        function getItem(collection, index) {
+            switch (collection) {
+                case 'stocks_and_bonds':
+                    return stocksAndBonds[index];
+                case 'real_estate':
+                    return realEstate[index];
+                case 'misc_assets':
+                    return miscAssets[index];
+                case 'liabilities':
+                    return liabilities[index];
+                default:
+                    return null;
+            }
         }
     </script>
 </head>
 <body>
-    <div class="container">
+    <div id="finance-tracker" class="container">
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div class="menu-links">
@@ -352,122 +304,125 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div class="section">
-            <h2>Stocks & Bonds</h2>
-            <table id="stocksBonds-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Stock & Bond rows will go here -->
-                </tbody>
-            </table>
-            <div class="form-group">
-                <input type="text" id="stock-bond-description" placeholder="Description">
-                <input type="number" id="stock-bond-value" placeholder="Value">
-                <button onclick="addStockBond()">Add Stocks & Bonds</button>
+        <div id="content" style="flex: 1;">
+            <div class="section" id="stocks-and-bonds-section">
+                <h2>Stocks & Bonds</h2>
+                <table id="stocks_and_bonds-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Stocks & Bonds rows will go here -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <input type="text" id="stocks_and_bonds-description" placeholder="Description">
+                    <input type="number" id="stocks_and_bonds-value" placeholder="Value">
+                    <button onclick="addAsset('stocks_and_bonds')">Add Stocks & Bonds</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section">
-            <h2>Real Estate</h2>
-            <table id="real-estate-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Real Estate rows will go here -->
-                </tbody>
-            </table>
-            <div class="form-group">
-                <input type="text" id="real-estate-description" placeholder="Description">
-                <input type="number" id="real-estate-value" placeholder="Value">
-                <button onclick="addRealEstate()">Add Real Estate</button>
+            <div class="section" id="real-estate-section">
+                <h2>Real Estate</h2>
+                <table id="real_estate-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Real Estate rows will go here -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <input type="text" id="real_estate-description" placeholder="Description">
+                    <input type="number" id="real_estate-value" placeholder="Value">
+                    <button onclick="addAsset('real_estate')">Add Real Estate</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section">
-            <h2>Misc. Assets</h2>
-            <table id="misc-assets-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Misc. Asset rows will go here -->
-                </tbody>
-            </table>
-            <div class="form-group">
-                <input type="text" id="misc-asset-description" placeholder="Description">
-                <input type="number" id="misc-asset-value" placeholder="Value">
-                <button onclick="addMiscAsset()">Add Misc. Assets</button>
+            <div class="section" id="misc-assets-section">
+                <h2>Misc. Assets</h2>
+                <table id="misc_assets-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Misc. Assets rows will go here -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <input type="text" id="misc_assets-description" placeholder="Description">
+                    <input type="number" id="misc_assets-value" placeholder="Value">
+                    <button onclick="addAsset('misc_assets')">Add Misc. Assets</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section">
-            <h2>Liabilities</h2>
-            <table id="liabilities-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Liability rows will go here -->
-                </tbody>
-            </table>
-            <div class="form-group">
-                <input type="text" id="liability-description" placeholder="Description">
-                <input type="number" id="liability-value" placeholder="Value">
-                <button onclick="addLiability()">Add Liability</button>
+            <div class="section" id="liabilities-section">
+                <h2>Liabilities</h2>
+                <table id="liabilities-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Liability rows will go here -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <input type="text" id="liability-description" placeholder="Description">
+                    <input type="number" id="liability-value" placeholder="Value">
+                    <button onclick="addAsset('liabilities')">Add Liability</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section">
-            <h2>Summary</h2>
-            <table>
-                <tr>
-                    <th>Total Stocks & Bonds</th>
-                    <td id="total-stocks-bonds" class="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Real Estate</th>
-                    <td id="total-real-estate" class="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Misc. Assets</th>
-                    <td id="total-misc-assets" class="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Assets</th>
-                    <td id="total-assets" class="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Liabilities</th>
-                    <td id="total-liabilities" class="total-liabilities">$0</td>
-                </tr>
-                <tr class="total">
-                    <th>Net Worth</th>
-                    <td id="net-worth">$0</td>
-                </tr>
-            </table>
+            <div class="section">
+                <h2>Summary</h2>
+                <table>
+                    <tr>
+                        <th>Total Stocks & Bonds</th>
+                        <td id="total-stocks_and_bonds" class="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Real Estate</th>
+                        <td id="total-real_estate" class="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Misc. Assets</th>
+                        <td id="total-misc_assets" class="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Assets</th>
+                        <td id="total-assets" class="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Liabilities</th>
+                        <td id="total-liabilities" class="total-liabilities">$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Net Worth</th>
+                        <td id="net-worth">$0</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>
 </html>
+
 
 
 
