@@ -234,11 +234,11 @@
             if (description && !isNaN(value)) {
                 db.collection(collection).doc(id).update({
                     description: description,
-                    value: value,
+                    value: collection === 'liabilities' ? -value : value,
                     previousValue: item.value
                 }).then(() => {
                     item.description = description;
-                    item.value = value;
+                    item.value = collection === 'liabilities' ? -value : value;
                     loadData(); // Reload data to update the table and summary
                 });
             }
@@ -254,7 +254,8 @@
             const value = parseFloat(document.getElementById(`${collection}-value`).value);
             if (description && !isNaN(value)) {
                 const newItem = { description, value: collection === 'liabilities' ? -value : value, previousValue: 0 };
-                await db.collection(collection).add(newItem);
+                const docRef = await db.collection(collection).add(newItem);
+                newItem.id = docRef.id;
                 loadData(); // Reload data to update the table and summary
                 document.getElementById(`${collection}-description`).value = '';
                 document.getElementById(`${collection}-value`).value = '';
@@ -430,6 +431,7 @@
     </div>
 </body>
 </html>
+
 
 
 
