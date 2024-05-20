@@ -100,6 +100,10 @@
         .form-group button:hover {
             background-color: #0c0;
         }
+        .negative-value {
+            color: red;
+            text-decoration: underline double;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -155,7 +159,8 @@
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').classList.add('negative-value');
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
@@ -217,6 +222,7 @@
     </div>
 </body>
 </html>
+
 
 
 
