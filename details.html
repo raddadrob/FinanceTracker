@@ -234,11 +234,11 @@
             if (description && !isNaN(value)) {
                 db.collection(collection).doc(id).update({
                     description: description,
-                    value: collection === 'liabilities' ? -value : value,
+                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
                     previousValue: item.value
                 }).then(() => {
                     item.description = description;
-                    item.value = collection === 'liabilities' ? -value : value;
+                    item.value = value;
                     loadData(); // Reload data to update the table and summary
                 });
             }
@@ -262,7 +262,11 @@
             const value = parseFloat(valueInput.value);
 
             if (description && !isNaN(value)) {
-                const newItem = { description, value: collection === 'liabilities' ? -value : value, previousValue: 0 };
+                const newItem = {
+                    description,
+                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
+                    previousValue: 0
+                };
                 const docRef = await db.collection(collection).add(newItem);
                 newItem.id = docRef.id;
                 console.log(`Added ${collection} item with ID ${newItem.id}`); // Logging
