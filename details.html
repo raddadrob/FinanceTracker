@@ -254,8 +254,7 @@
             const value = parseFloat(document.getElementById(`${collection}-value`).value);
             if (description && !isNaN(value)) {
                 const newItem = { description, value, previousValue: 0 };
-                const docRef = await db.collection(collection).add(newItem);
-                newItem.id = docRef.id;
+                await db.collection(collection).add(newItem);
                 loadData(); // Reload data to update the table and summary
                 document.getElementById(`${collection}-description`).value = '';
                 document.getElementById(`${collection}-value`).value = '';
@@ -431,6 +430,7 @@
     </div>
 </body>
 </html>
+
 
 
 
