@@ -103,35 +103,29 @@
         }
         .delta-positive {
             color: green;
-            font-style: italic;
-            font-weight: bold;
         }
         .delta-negative {
             color: red;
-            font-style: italic;
-            font-weight: bold;
-        }
-        .liability-value {
-            color: red;
         }
         th:nth-child(1), td:nth-child(1) {
-            width: 60%;
+            width: 45%;
         }
         th:nth-child(2), td:nth-child(2) {
-            width: 20%;
+            width: 15%;
         }
         th:nth-child(3), td:nth-child(3) {
-            width: 20%;
+            width: 15%;
+        }
+        th:nth-child(4), td:nth-child(4) {
+            width: 15%;
+            text-align: center;
+        }
+        th:nth-child(5), td:nth-child(5) {
+            width: 10%;
             text-align: center;
         }
         button {
             margin: 2px;
-        }
-        .total-assets-value {
-            text-decoration: underline;
-        }
-        .total-liabilities-value {
-            text-decoration: underline double;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -203,18 +197,17 @@
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const valueCell = row.insertCell(1);
-                if (collection === 'liabilities') {
-                    valueCell.innerText = `($${formatNumber(item.value)})`;
-                    valueCell.classList.add('liability-value');
-                } else {
-                    valueCell.innerText = `$${formatNumber(item.value)}`;
-                }
+                valueCell.innerText = `$${formatNumber(item.value)}`;
                 const delta = item.value - (item.previousValue || 0);
                 const deltaCell = document.createElement('span');
                 deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
                 deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
+                deltaCell.style.fontSize = '0.8em';
+                deltaCell.style.fontStyle = 'italic';
                 valueCell.appendChild(deltaCell);
-                const actionCell = row.insertCell(2);
+                const previousValueCell = row.insertCell(2);
+                previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
+                const actionCell = row.insertCell(3);
                 actionCell.style.textAlign = 'center';
                 const editButton = document.createElement('button');
                 editButton.innerText = 'Edit';
@@ -277,10 +270,8 @@
             document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-            document.getElementById('total-assets').classList.add('total-assets-value');
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').classList.add('total-liabilities-value');
-            document.getElementById('total-liabilities').innerText = `($${formatNumber(totalLiabilities)})`;
+            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
@@ -322,6 +313,7 @@
                         <tr>
                             <th>Description</th>
                             <th>Value</th>
+                            <th>Previous Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -343,6 +335,7 @@
                         <tr>
                             <th>Description</th>
                             <th>Value</th>
+                            <th>Previous Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -364,6 +357,7 @@
                         <tr>
                             <th>Description</th>
                             <th>Value</th>
+                            <th>Previous Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -385,6 +379,7 @@
                         <tr>
                             <th>Description</th>
                             <th>Value</th>
+                            <th>Previous Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -416,11 +411,11 @@
                     </tr>
                     <tr>
                         <th>Total Assets</th>
-                        <td id="total-assets" class="total-assets-value">$0</td>
+                        <td id="total-assets">$0</td>
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities" class="total-liabilities-value">$0</td>
+                        <td id="total-liabilities">$0</td>
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
@@ -432,6 +427,7 @@
     </div>
 </body>
 </html>
+
 
 
 
