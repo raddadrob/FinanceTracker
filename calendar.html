@@ -78,15 +78,17 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* Ensure buttons stay in a single row */
+            overflow-x: auto; /* Allow scrolling if necessary */
         }
         .month-selector div {
-            padding: 10px 20px;
+            padding: 5px 10px; /* Adjust padding for smaller buttons */
             background: #444;
             border-radius: 4px;
             margin: 5px;
             cursor: pointer;
             color: #0f0;
+            flex: 0 0 auto; /* Prevent shrinking */
         }
         .month-selector div:hover {
             background: #0c0;
@@ -328,6 +330,7 @@
     </div>
 </body>
 </html>
+
 
 
 
