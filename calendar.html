@@ -22,7 +22,7 @@
             display: flex;
             flex-direction: column;
         }
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #0f0;
         }
@@ -61,42 +61,37 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        .form-group {
+        .month-navigation {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            justify-content: center;
         }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
-            color: #fff;
-        }
-        .month-selector {
+        .month-buttons {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: nowrap; /* Ensure buttons stay in a single row */
-            overflow-x: auto; /* Allow scrolling if necessary */
+            gap: 5px;
+            flex-wrap: wrap;
         }
-        .month-selector div {
-            padding: 5px 10px; /* Adjust padding for smaller buttons */
+        .month-buttons button {
             background: #444;
+            color: #fff;
+            padding: 10px;
+            border: none;
             border-radius: 4px;
-            margin: 5px;
             cursor: pointer;
-            color: #0f0;
-            flex: 0 0 auto; /* Prevent shrinking */
         }
-        .month-selector div:hover {
+        .month-buttons button:hover {
             background: #0c0;
         }
-        .green-line {
-            height: 2px;
-            background-color: #0f0;
-            margin: 10px 0;
+        .month-buttons button.active {
+            background: #0f0;
+            color: #000;
+        }
+        .month-year {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #0f0;
         }
         .calendar {
             display: grid;
@@ -107,12 +102,13 @@
             background: #444;
             padding: 10px;
             border-radius: 4px;
+            text-align: center;
         }
         .day header {
+            margin-bottom: 5px;
             font-weight: bold;
-            margin-bottom: 10px;
         }
-        .day input {
+        .day input[type="number"] {
             width: 100%;
             padding: 5px;
             margin-bottom: 5px;
@@ -121,27 +117,35 @@
             background: #222;
             color: #fff;
         }
-        .day input.credit {
-            color: green;
-        }
-        .day input.debit {
-            color: red;
-        }
-        .calendar-header {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 10px;
-        }
-        .calendar-header div {
-            text-align: center;
+        .cash-balance {
+            margin-top: 10px;
             font-weight: bold;
         }
         .ending-balance {
-            margin-top: 20px;
-            padding: 10px;
-            background: #444;
-            border-radius: 4px;
             text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .initial-cash-balance {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .initial-cash-balance input {
+            padding: 5px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+        }
+        .days-of-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .days-of-week div {
+            font-weight: bold;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -162,136 +166,145 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let initialCashBalance = 0;
-        const cashBalances = {};
-
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentUser;
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
+        let initialCashBalance = 0;
 
-        function logOff() {
-            auth.signOut().then(() => {
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadInitialCashBalance();
+                renderCalendar();
+            } else {
                 window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
-                    renderMonthSelector();
-                    renderCalendar();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
+            }
         });
 
-        function setInitialCashBalance(event) {
-            const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
-            initialCashBalance = value;
-            event.target.value = `$${formatNumber(value)}`;
-            db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).set({ balance: initialCashBalance });
-            calculateBalances();
-        }
-
-        function calculateBalances() {
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            let previousDayBalance = initialCashBalance;
-            for (let day = 1; day <= daysInMonth; day++) {
-                const creditInput = document.getElementById(`credit-${day}`);
-                const debitInput = document.getElementById(`debit-${day}`);
-                const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const cashBalance = previousDayBalance + credit - debit;
-                cashBalances[day] = cashBalance;
-                document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
-                creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                debitInput.value = debit !== 0 ? `-$${formatNumber(debit)}` : '';
-                previousDayBalance = cashBalance;
-
-                db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
-                    credit: credit,
-                    debit: debit,
-                    cash: cashBalance
-                });
-            }
-            document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
-        }
-
-        async function renderCalendar() {
-            const calendar = document.querySelector('.calendar');
-            const month = monthNames[currentMonth] + ' ' + currentYear;
-            document.getElementById('month').innerText = month;
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-            const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
-            if (initialBalanceDoc.exists) {
-                initialCashBalance = initialBalanceDoc.data().balance;
-                document.getElementById('initial-cash-balance').value = `$${formatNumber(initialCashBalance)}`;
+        async function loadInitialCashBalance() {
+            const doc = await db.collection('users').doc(currentUser.uid).collection('cash_flow').doc(`${currentYear}-${currentMonth}`).get();
+            if (doc.exists) {
+                initialCashBalance = doc.data().initialCashBalance || 0;
             } else {
                 initialCashBalance = 0;
-                document.getElementById('initial-cash-balance').value = '';
             }
+            document.getElementById('initial-cash-balance').value = initialCashBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('$', '');
+        }
 
-            // Clear existing calendar
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYearLabel = document.getElementById('month-year');
             calendar.innerHTML = '';
+            monthYearLabel.innerText = `${monthNames[currentMonth]} ${currentYear}`;
 
-            // Fill initial empty days
-            for (let i = 0; i < startDay; i++) {
-                const emptyElement = document.createElement('div');
-                emptyElement.classList.add('day');
-                calendar.appendChild(emptyElement);
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            // Render empty days before the start of the month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.classList.add('day');
+                calendar.appendChild(emptyDay);
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.classList.add('day');
-                dayElement.innerHTML = `
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+                dayDiv.innerHTML = `
                     <header>${day}</header>
-                    <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
-                    <div>Cash: <span id="cash-${day}">$0</span></div>
+                    <input type="number" class="credit" placeholder="Credit" onblur="updateCashFlow(${day})">
+                    <input type="number" class="debit" placeholder="Debit" onblur="updateCashFlow(${day})">
+                    <div class="cash-balance" id="cash-${day}">Cash: $0</div>
                 `;
-                calendar.appendChild(dayElement);
-
-                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).get();
-                if (dayDoc.exists) {
-                    const data = dayDoc.data();
-                    document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
-                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(data.debit)}` : '';
-                    document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
-                }
+                calendar.appendChild(dayDiv);
             }
 
-            calculateBalances();
+            loadCashFlow();
         }
 
-        function renderMonthSelector() {
-            const monthSelector = document.querySelector('.month-selector');
-            monthSelector.innerHTML = '';
-            monthNames.forEach((monthName, index) => {
-                const monthDiv = document.createElement('div');
-                monthDiv.innerText = monthName;
-                monthDiv.onclick = () => {
-                    currentMonth = index;
-                    renderCalendar();
-                };
-                monthSelector.appendChild(monthDiv);
-            });
+        async function loadCashFlow() {
+            const snapshot = await db.collection('users').doc(currentUser
+            .uid).collection('cash_flow').doc(`${currentYear}-${currentMonth}`).get();
+            if (snapshot.exists) {
+                const data = snapshot.data();
+                for (let day = 1; day <= 31; day++) {
+                    const creditInput = document.querySelector(`.day:nth-child(${day + new Date(currentYear, currentMonth, 1).getDay()}) .credit`);
+                    const debitInput = document.querySelector(`.day:nth-child(${day + new Date(currentYear, currentMonth, 1).getDay()}) .debit`);
+                    const cashBalanceDiv = document.getElementById(`cash-${day}`);
+                    if (data[day]) {
+                        creditInput.value = data[day].credit || '';
+                        debitInput.value = data[day].debit || '';
+                        cashBalanceDiv.innerText = `Cash: $${formatNumber(data[day].cash)}`;
+                    }
+                }
+                updateCashBalances();
+            }
         }
 
         function formatNumber(value) {
-            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            return parseFloat(value).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('$', '');
+        }
+
+        async function updateCashFlow(day) {
+            const creditInput = document.querySelector(`.day:nth-child(${day + new Date(currentYear, currentMonth, 1).getDay()}) .credit`);
+            const debitInput = document.querySelector(`.day:nth-child(${day + new Date(currentYear, currentMonth, 1).getDay()}) .debit`);
+            const credit = parseFloat(creditInput.value) || 0;
+            const debit = parseFloat(debitInput.value) || 0;
+
+            const cashBalance = initialCashBalance + credit - debit;
+            const cashBalanceDiv = document.getElementById(`cash-${day}`);
+            cashBalanceDiv.innerText = `Cash: $${formatNumber(cashBalance)}`;
+
+            const docRef = db.collection('users').doc(currentUser.uid).collection('cash_flow').doc(`${currentYear}-${currentMonth}`);
+            const doc = await docRef.get();
+            if (doc.exists) {
+                const data = doc.data();
+                data[day] = { credit, debit, cash: cashBalance };
+                await docRef.update(data);
+            } else {
+                const data = { [day]: { credit, debit, cash: cashBalance } };
+                await docRef.set(data);
+            }
+
+            updateCashBalances();
+        }
+
+        function updateCashBalances() {
+            const days = document.querySelectorAll('.day');
+            let previousCash = initialCashBalance;
+            days.forEach((dayDiv, index) => {
+                const creditInput = dayDiv.querySelector('.credit');
+                const debitInput = dayDiv.querySelector('.debit');
+                const cashBalanceDiv = dayDiv.querySelector('.cash-balance');
+
+                const credit = parseFloat(creditInput.value) || 0;
+                const debit = parseFloat(debitInput.value) || 0;
+                const cash = previousCash + credit - debit;
+
+                cashBalanceDiv.innerText = `Cash: $${formatNumber(cash)}`;
+                previousCash = cash;
+            });
+
+            document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousCash)}`;
+        }
+
+        function setMonth(month) {
+            currentMonth = month;
+            loadInitialCashBalance();
+            renderCalendar();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
         }
     </script>
 </head>
 <body>
-    <div id="finance-tracker" class="container">
+    <div id="calendar-container" class="container">
         <h1>Cockrum Finances</h1>
         <div class="menu-bar">
             <div class="menu-links">
@@ -304,32 +317,24 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content">
-            <div class="green-line"></div>
-            <div class="month-selector"></div>
-            <div class="green-line"></div>
-            <div class="form-group">
-                <label for="initial-cash-balance">Initial Cash Balance:</label>
-                <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
-            </div>
-            <h2 id="month" style="text-align: center;"></h2>
-            <div class="calendar-header">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
-            </div>
-            <div class="calendar"></div>
-            <div class="ending-balance">
-                <span id="ending-balance">Ending Balance: $0</span>
+        <div class="month-navigation">
+            <div class="month-buttons">
+                ${monthNames.map((month, index) => `<button onclick="setMonth(${index})" class="${index === currentMonth ? 'active' : ''}">${month}</button>`).join('')}
             </div>
         </div>
+        <div class="initial-cash-balance">
+            Initial Cash Balance: <input type="number" id="initial-cash-balance" onblur="updateCashFlow(0)" placeholder="Enter initial cash balance">
+        </div>
+        <div id="month-year" class="month-year"></div>
+        <div class="days-of-week">
+            ${daysOfWeek.map(day => `<div>${day}</div>`).join('')}
+        </div>
+        <div id="calendar" class="calendar"></div>
+        <div id="ending-balance" class="ending-balance"></div>
     </div>
 </body>
 </html>
+
 
 
 
