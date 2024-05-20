@@ -61,9 +61,10 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        table {
+        .summary-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             margin-bottom: 20px;
         }
         th, td {
@@ -73,6 +74,15 @@
         }
         th {
             background-color: #444;
+        }
+        .total {
+            font-weight: bold;
+        }
+        .total td {
+            background-color: #333;
+        }
+        .total td#total-liabilities {
+            color: red;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -146,7 +156,7 @@
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
 
@@ -161,8 +171,8 @@
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
-                <a href="details.html">View Details</a>
-                <a href="calendar.html">Calendar</a>
+                <a href="details.html">Balance Sheet</a>
+                <a href="calendar.html">Cash Flow</a>
             </div>
             <div class="menu-buttons">
                 <button class="theme-button" onclick="toggleTheme()">Theme</button>
@@ -170,37 +180,40 @@
             </div>
         </div>
         <div id="content">
-            <h2>Summary</h2>
-            <table>
-                <tr>
-                    <th>Total Stocks & Bonds</th>
-                    <td id="total-stocks_and_bonds">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Real Estate</th>
-                    <td id="total-real_estate">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Misc. Assets</th>
-                    <td id="total-misc_assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Assets</th>
-                    <td id="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Liabilities</th>
-                    <td id="total-liabilities">$0</td>
-                </tr>
-                <tr class="total">
-                    <th>Net Worth</th>
-                    <td id="net-worth">$0</td>
-                </tr>
-            </table>
+            <div class="section">
+                <h2>Summary</h2>
+                <table class="summary-table">
+                    <tr>
+                        <th>Total Stocks & Bonds</th>
+                        <td id="total-stocks_and_bonds">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Real Estate</th>
+                        <td id="total-real_estate">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Misc. Assets</th>
+                        <td id="total-misc_assets">$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Total Assets</th>
+                        <td id="total-assets">$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Total Liabilities</th>
+                        <td id="total-liabilities">$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Net Worth</th>
+                        <td id="net-worth">$0</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>
 </html>
+
 
 
 
