@@ -205,11 +205,11 @@
                 const debitInput = document.getElementById(`debit-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const cashBalance = previousDayBalance + credit - debit;  // Fix here
+                const cashBalance = previousDayBalance + credit + debit; // Add credit, subtract debit
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';  // Fix here
+                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
                 previousDayBalance = cashBalance;
 
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
@@ -330,6 +330,7 @@
     </div>
 </body>
 </html>
+
 
 
 
