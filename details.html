@@ -111,6 +111,9 @@
             font-style: italic;
             font-weight: bold;
         }
+        .liability-value {
+            color: red;
+        }
         th:nth-child(1), td:nth-child(1) {
             width: 60%;
         }
@@ -200,7 +203,12 @@
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const valueCell = row.insertCell(1);
-                valueCell.innerText = `$${formatNumber(item.value)}`;
+                if (collection === 'liabilities') {
+                    valueCell.innerText = `($${formatNumber(item.value)})`;
+                    valueCell.classList.add('liability-value');
+                } else {
+                    valueCell.innerText = `$${formatNumber(item.value)}`;
+                }
                 const delta = item.value - (item.previousValue || 0);
                 const deltaCell = document.createElement('span');
                 deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
@@ -424,6 +432,7 @@
     </div>
 </body>
 </html>
+
 
 
 
