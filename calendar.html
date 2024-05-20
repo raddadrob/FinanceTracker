@@ -210,7 +210,7 @@
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                debitInput.value = debit !== 0 ? `-$${formatNumber(debit)}` : '';
+                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
                 previousDayBalance = cashBalance;
 
                 await db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
@@ -228,7 +228,6 @@
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -347,6 +346,7 @@
     </div>
 </body>
 </html>
+
 
 
 
