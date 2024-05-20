@@ -65,6 +65,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            justify-content: center;
         }
         .form-group input {
             padding: 8px;
@@ -77,6 +78,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .month-selector div {
             padding: 10px 20px;
@@ -88,6 +90,11 @@
         }
         .month-selector div:hover {
             background: #0c0;
+        }
+        .green-line {
+            height: 2px;
+            background-color: #0f0;
+            margin: 10px 0;
         }
         .calendar {
             display: grid;
@@ -181,10 +188,10 @@
         });
 
         function setInitialCashBalance(event) {
-            const value = parseFloat(event.target.value);
-            initialCashBalance = value || 0;
+            const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
+            initialCashBalance = value;
+            event.target.value = `$${formatNumber(value)}`;
             db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).set({ balance: initialCashBalance });
-            event.target.value = initialCashBalance ? `$${formatNumber(initialCashBalance)}` : '';
             calculateBalances();
         }
 
@@ -296,8 +303,14 @@
             </div>
         </div>
         <div id="content">
+            <div class="green-line"></div>
             <div class="month-selector"></div>
-            <h2 id="month"></h2>
+            <div class="green-line"></div>
+            <div class="form-group">
+                <label for="initial-cash-balance">Initial Cash Balance:</label>
+                <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
+            </div>
+            <h2 id="month" style="text-align: center;"></h2>
             <div class="calendar-header">
                 <div>Sun</div>
                 <div>Mon</div>
@@ -306,10 +319,6 @@
                 <div>Thu</div>
                 <div>Fri</div>
                 <div>Sat</div>
-            </div>
-            <div class="form-group">
-                <label for="initial-cash-balance">Initial Cash Balance:</label>
-                <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
             </div>
             <div class="calendar"></div>
             <div class="ending-balance">
