@@ -216,7 +216,7 @@
                     credit: credit,
                     debit: debit,
                     cash: cashBalance
-                });
+                }, { merge: true });
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
         }
@@ -296,7 +296,7 @@
                 credit: credit,
                 debit: debit,
                 cash: cashBalance
-            });
+            }, { merge: true });
 
             calculateBalances();
         }
@@ -346,6 +346,7 @@
     </div>
 </body>
 </html>
+
 
 
 
