@@ -185,13 +185,20 @@
             const month = 'May 2024';
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(2024, 5, 0).getDate();
-            const startDay = new Date(2024, 4, 1).getDay(); // May 1, 2024
+            const startDay = new Date(2024, 4, 1).getDay(); // May 1, 2024 is a Wednesday
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc('initial_balance').get();
             if (initialBalanceDoc.exists) {
                 initialCashBalance = initialBalanceDoc.data().balance;
                 document.getElementById('initial-cash-balance').value = initialCashBalance;
+            }
+
+            // Fill initial empty days
+            for (let i = 0; i < startDay; i++) {
+                const emptyElement = document.createElement('div');
+                emptyElement.classList.add('day');
+                calendar.appendChild(emptyElement);
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
@@ -251,6 +258,7 @@
     </div>
 </body>
 </html>
+
 
 
 
