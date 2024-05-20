@@ -274,7 +274,7 @@
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `($${formatNumber(totalLiabilities)})`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
             document.getElementById('total-liabilities').style.color = 'red';
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
         }
@@ -419,7 +419,7 @@
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">($0)</td>
+                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">-$0</td>
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
@@ -431,6 +431,7 @@
     </div>
 </body>
 </html>
+
 
 
 
