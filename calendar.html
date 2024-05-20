@@ -205,7 +205,7 @@
                 const debitInput = document.getElementById(`debit-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const cashBalance = previousDayBalance + credit - Math.abs(debit); // Ensure debits are subtracted
+                const cashBalance = previousDayBalance + credit - debit;
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
@@ -227,6 +227,7 @@
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -252,8 +253,8 @@
                 dayElement.classList.add('day');
                 dayElement.innerHTML = `
                     <header>${day}</header>
-                    <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="saveDayData(${day})">
+                    <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="saveDayData(${day})">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -282,6 +283,22 @@
                 };
                 monthSelector.appendChild(monthDiv);
             });
+        }
+
+        function saveDayData(day) {
+            const creditInput = document.getElementById(`credit-${day}`);
+            const debitInput = document.getElementById(`debit-${day}`);
+            const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
+            const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
+            const cashBalance = cashBalances[day] || 0;
+
+            db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
+                credit: credit,
+                debit: debit,
+                cash: cashBalance
+            });
+
+            calculateBalances();
         }
 
         function formatNumber(value) {
