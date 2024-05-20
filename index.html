@@ -50,7 +50,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button, .theme-button {
+        .logoff-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -58,13 +58,15 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover, .theme-button:hover {
+        .logoff-button:hover {
             background: #0c0;
         }
-        .summary-table {
+        .section {
+            margin-bottom: 20px;
+        }
+        table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
             margin-bottom: 20px;
         }
         th, td {
@@ -75,14 +77,28 @@
         th {
             background-color: #444;
         }
-        .total {
-            font-weight: bold;
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .total td {
-            background-color: #333;
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
         }
-        .total td#total-liabilities {
-            color: red;
+        .form-group button {
+            padding: 8px 16px;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0c0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -103,10 +119,16 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let stocksAndBonds = [];
-        let realEstate = [];
-        let miscAssets = [];
-        let liabilities = [];
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    loadSummary();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
 
         function logOff() {
             auth.signOut().then(() => {
@@ -116,39 +138,16 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    loadData();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
-        });
+        async function loadSummary() {
+            const stocksAndBondsSnapshot = await db.collection('stocks_and_bonds').get();
+            const realEstateSnapshot = await db.collection('real_estate').get();
+            const miscAssetsSnapshot = await db.collection('misc_assets').get();
+            const liabilitiesSnapshot = await db.collection('liabilities').get();
 
-        async function loadData() {
-            await loadCollection('stocks_and_bonds', stocksAndBonds);
-            await loadCollection('real_estate', realEstate);
-            await loadCollection('misc_assets', miscAssets);
-            await loadCollection('liabilities', liabilities);
-            updateSummary();
-        }
-
-        async function loadCollection(collection, dataArray) {
-            const snapshot = await db.collection(collection).get();
-            dataArray.length = 0;
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                dataArray.push(data);
-            });
-        }
-
-        function updateSummary() {
-            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
-            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
-            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
-            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
+            const totalStocksAndBonds = calculateTotal(stocksAndBondsSnapshot);
+            const totalRealEstate = calculateTotal(realEstateSnapshot);
+            const totalMiscAssets = calculateTotal(miscAssetsSnapshot);
+            const totalLiabilities = calculateTotal(liabilitiesSnapshot);
             const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
             const netWorth = totalAssets - totalLiabilities;
 
@@ -156,8 +155,16 @@
             document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
             document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').innerText = `$${formatNumber(totalLiabilities)}`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+        }
+
+        function calculateTotal(snapshot) {
+            let total = 0;
+            snapshot.forEach(doc => {
+                total += doc.data().value;
+            });
+            return total;
         }
 
         function formatNumber(value) {
@@ -175,44 +182,42 @@
                 <a href="calendar.html">Cash Flow</a>
             </div>
             <div class="menu-buttons">
-                <button class="theme-button" onclick="toggleTheme()">Theme</button>
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content">
-            <div class="section">
-                <h2>Summary</h2>
-                <table class="summary-table">
-                    <tr>
-                        <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities">$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
-            </div>
+        <div class="section">
+            <h2>Summary</h2>
+            <table>
+                <tr>
+                    <th>Total Stocks & Bonds</th>
+                    <td id="total-stocks_and_bonds">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Real Estate</th>
+                    <td id="total-real_estate">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Misc. Assets</th>
+                    <td id="total-misc_assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Assets</th>
+                    <td id="total-assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Liabilities</th>
+                    <td id="total-liabilities">$0</td>
+                </tr>
+                <tr class="total">
+                    <th>Net Worth</th>
+                    <td id="net-worth">$0</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
 </html>
+
 
 
 
