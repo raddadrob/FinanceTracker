@@ -162,8 +162,8 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const creditInput = document.getElementById(`credit-${day}`);
                 const debitInput = document.getElementById(`debit-${day}`);
-                const credit = parseFloat(creditInput.value) || 0;
-                const debit = parseFloat(debitInput.value) || 0;
+                const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
+                const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const cashBalance = previousDayBalance + credit - debit;
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
@@ -200,8 +200,8 @@
                 dayElement.classList.add('day');
                 dayElement.innerHTML = `
                     <header>${day} (${dayOfWeek})</header>
-                    <input type="number" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="number" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
+                    <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
