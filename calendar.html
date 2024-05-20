@@ -205,11 +205,11 @@
                 const debitInput = document.getElementById(`debit-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const cashBalance = previousDayBalance + credit - Math.abs(debit); // Subtract debit as a positive value
+                const cashBalance = previousDayBalance + credit - debit;
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
+                debitInput.value = debit !== 0 ? `-$${formatNumber(debit)}` : '';
                 previousDayBalance = cashBalance;
 
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
@@ -263,7 +263,7 @@
                 if (dayDoc.exists) {
                     const data = dayDoc.data();
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
-                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
+                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(data.debit)}` : '';
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
                 }
             }
@@ -296,8 +296,8 @@
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
-                <a href="details.html">View Details</a>
-                <a href="calendar.html">Calendar</a>
+                <a href="details.html">Balance Sheet</a>
+                <a href="calendar.html">Cash Flow</a>
             </div>
             <div class="menu-buttons">
                 <button class="theme-button" onclick="toggleTheme()">Theme</button>
@@ -330,6 +330,7 @@
     </div>
 </body>
 </html>
+
 
 
 
