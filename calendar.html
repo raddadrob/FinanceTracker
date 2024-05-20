@@ -73,6 +73,22 @@
             background: #222;
             color: #fff;
         }
+        .month-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .month-selector div {
+            padding: 10px 20px;
+            background: #444;
+            border-radius: 4px;
+            margin: 5px;
+            cursor: pointer;
+            color: #0f0;
+        }
+        .month-selector div:hover {
+            background: #0c0;
+        }
         .calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -131,6 +147,10 @@
         let initialCashBalance = 0;
         const cashBalances = {};
 
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
         function logOff() {
             auth.signOut().then(() => {
                 window.location.href = 'login.html';
@@ -143,6 +163,7 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
+                    renderMonthSelector();
                     renderCalendar();
                 } else {
                     window.location.href = 'login.html';
@@ -152,12 +173,12 @@
 
         function setInitialCashBalance(event) {
             initialCashBalance = parseFloat(event.target.value);
-            db.collection('calendar').doc('initial_balance').set({ balance: initialCashBalance });
+            db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).set({ balance: initialCashBalance });
             calculateBalances();
         }
 
         function calculateBalances() {
-            const daysInMonth = new Date(2024, 5, 0).getDate();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             let previousDayBalance = initialCashBalance;
             for (let day = 1; day <= daysInMonth; day++) {
                 const creditInput = document.getElementById(`credit-${day}`);
@@ -171,7 +192,7 @@
                 debitInput.value = debit !== 0 ? `-$${formatNumber(debit)}` : '';
                 previousDayBalance = cashBalance;
 
-                db.collection('calendar').doc(`day-${day}`).set({
+                db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
                     credit: credit,
                     debit: debit,
                     cash: cashBalance
@@ -182,17 +203,20 @@
 
         async function renderCalendar() {
             const calendar = document.querySelector('.calendar');
-            const month = 'May 2024';
+            const month = monthNames[currentMonth] + ' ' + currentYear;
             document.getElementById('month').innerText = month;
-            const daysInMonth = new Date(2024, 5, 0).getDate();
-            const startDay = new Date(2024, 4, 1).getDay(); // May 1, 2024 is a Wednesday
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-            const initialBalanceDoc = await db.collection('calendar').doc('initial_balance').get();
+            const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
                 initialCashBalance = initialBalanceDoc.data().balance;
                 document.getElementById('initial-cash-balance').value = initialCashBalance;
             }
+
+            // Clear existing calendar
+            calendar.innerHTML = '';
 
             // Fill initial empty days
             for (let i = 0; i < startDay; i++) {
@@ -213,7 +237,7 @@
                 `;
                 calendar.appendChild(dayElement);
 
-                const dayDoc = await db.collection('calendar').doc(`day-${day}`).get();
+                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).get();
                 if (dayDoc.exists) {
                     const data = dayDoc.data();
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
@@ -223,6 +247,19 @@
             }
 
             calculateBalances();
+        }
+
+        function renderMonthSelector() {
+            const monthSelector = document.querySelector('.month-selector');
+            monthNames.forEach((monthName, index) => {
+                const monthDiv = document.createElement('div');
+                monthDiv.innerText = monthName;
+                monthDiv.onclick = () => {
+                    currentMonth = index;
+                    renderCalendar();
+                };
+                monthSelector.appendChild(monthDiv);
+            });
         }
 
         function formatNumber(value) {
@@ -245,6 +282,7 @@
             </div>
         </div>
         <div id="content">
+            <div class="month-selector"></div>
             <h2 id="month"></h2>
             <div class="form-group">
                 <label for="initial-cash-balance">Initial Cash Balance:</label>
@@ -258,6 +296,7 @@
     </div>
 </body>
 </html>
+
 
 
 
