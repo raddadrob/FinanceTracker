@@ -193,9 +193,16 @@
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const previousValueCell = row.insertCell(1);
-                previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
                 const valueCell = row.insertCell(2);
-                valueCell.innerText = `$${formatNumber(item.value)}`;
+                if (collection === 'liabilities') {
+                    previousValueCell.innerText = item.previousValue ? `-$${formatNumber(item.previousValue)}` : '$0';
+                    previousValueCell.style.color = 'red';
+                    valueCell.innerText = item.value ? `-$${formatNumber(item.value)}` : '$0';
+                    valueCell.style.color = 'red';
+                } else {
+                    previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
+                    valueCell.innerText = `$${formatNumber(item.value)}`;
+                }
                 const delta = item.value - (item.previousValue || 0);
                 const deltaCell = document.createElement('span');
                 deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
@@ -424,6 +431,7 @@
     </div>
 </body>
 </html>
+
 
 
 
