@@ -186,14 +186,20 @@
         async function loadChartData(year, month) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const cashFlowData = [];
+            const creditData = [];
+            const debitData = [];
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
                 if (doc.exists) {
                     const data = doc.data();
                     cashFlowData.push(data.cash);
+                    creditData.push(data.credit || 0);
+                    debitData.push(-Math.abs(data.debit || 0));
                 } else {
                     cashFlowData.push(0);
+                    creditData.push(0);
+                    debitData.push(0);
                 }
             }
 
@@ -207,26 +213,37 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Daily Cash Balance',
-                        data: cashFlowData,
-                        backgroundColor: 'rgba(0, 255, 0, 0.5)',
-                        borderColor: 'rgba(0, 255, 0, 1)',
-                        borderWidth: 1
-                    }]
+                    datasets: [
+                        {
+                            label: 'Credits',
+                            data: creditData,
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Debits',
+                            data: debitData,
+                            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1
+                        }
+                    ]
                 },
                 options: {
                     scales: {
                         x: {
+                            stacked: true,
                             beginAtZero: true
                         },
                         y: {
+                            stacked: true,
                             beginAtZero: true
                         }
                     },
                     plugins: {
                         legend: {
-                            display: false
+                            display: true
                         }
                     }
                 }
@@ -322,7 +339,6 @@
     </div>
 </body>
 </html>
-
 
 
 
