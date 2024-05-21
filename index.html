@@ -243,6 +243,12 @@
                             beginAtZero: true,
                             grid: {
                                 color: '#0f0' // Green horizontal lines
+                            },
+                            ticks: {
+                                color: '#0f0', // Green y-axis labels
+                                callback: function(value) {
+                                    return '$' + formatNumber(value);
+                                }
                             }
                         }
                     },
@@ -346,6 +352,7 @@
     </div>
 </body>
 </html>
+
 
 
 
