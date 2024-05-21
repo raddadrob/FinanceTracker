@@ -212,8 +212,8 @@
                     datasets: [
                         {
                             label: 'Credits',
-                            backgroundColor: 'rgba(0, 0, 255, 0.5)',
-                            borderColor: 'rgba(0, 0, 255, 1)',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
                             borderWidth: 1,
                             data: credits
                         },
@@ -238,6 +238,13 @@
                     scales: {
                         y: {
                             beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#0f0'
+                            }
                         }
                     }
                 }
@@ -333,6 +340,7 @@
     </div>
 </body>
 </html>
+
 
 
 
