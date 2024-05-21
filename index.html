@@ -84,11 +84,23 @@
             text-decoration: underline;
         }
         .summary-table tr:nth-child(5) td {
-            text-decoration: double underline;
+            text-decoration: underline double;
             color: red;
         }
         .summary-table tr:last-child td {
             font-size: 1.2em;
+        }
+        .dropdown-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .dropdown-container select {
+            padding: 10px;
+            border-radius: 4px;
+            background: #444;
+            color: #fff;
+            border: 1px solid #555;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -132,10 +144,26 @@
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
-                        <td id="
-                        net-worth">$0</td>
+                        <td id="net-worth">$0</td>
                     </tr>
                 </table>
+            </div>
+            <div class="dropdown-container">
+                <label for="month-select">Select Month: </label>
+                <select id="month-select" onchange="loadCashFlowData()">
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
             </div>
             <div class="section">
                 <h2>Cash Flow</h2>
@@ -173,7 +201,6 @@
         });
 
         async function loadSummaryData() {
-            // Fetch and display summary data from Firestore
             const totalStocksAndBonds = await getTotalValue('stocks_and_bonds');
             const totalRealEstate = await getTotalValue('real_estate');
             const totalMiscAssets = await getTotalValue('misc_assets');
@@ -197,11 +224,12 @@
         async function loadCashFlowData() {
             const cashFlowData = [];
             const cashFlowLabels = [];
-            const currentMonth = new Date().getMonth();
+            const monthSelect = document.getElementById('month-select');
+            const selectedMonth = parseInt(monthSelect.value);
             const currentYear = new Date().getFullYear();
 
             for (let day = 1; day <= 31; day++) {
-                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).get();
+                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${selectedMonth}-day-${day}`).get();
                 if (dayDoc.exists) {
                     const data = dayDoc.data();
                     cashFlowData.push(data.cash);
@@ -258,7 +286,6 @@
     </script>
 </body>
 </html>
-
 
 
 
