@@ -222,8 +222,6 @@
                 const creditDesc = creditDescInput.value || '';
                 const debitDesc = debitDescInput.value || '';
 
-                previousDayBalance = cashBalance;
-
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
                     credit: credit,
                     debit: debit,
@@ -231,6 +229,8 @@
                     creditDesc: creditDesc,
                     debitDesc: debitDesc
                 });
+
+                previousDayBalance = cashBalance;
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
         }
@@ -348,6 +348,7 @@
     </div>
 </body>
 </html>
+
 
 
 
