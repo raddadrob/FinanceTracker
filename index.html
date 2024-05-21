@@ -121,8 +121,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    loadData();
                     setupDropdowns();
+                    loadData();
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -130,32 +130,37 @@
         });
 
         async function loadData() {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            updateSummary(currentMonth, currentYear);
-            renderChart(currentMonth, currentYear);
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const selectedMonth = monthSelect.value;
+            const selectedYear = parseInt(yearSelect.value, 10);
+
+            updateSummary(selectedMonth, selectedYear);
+            renderChart(selectedMonth, selectedYear);
         }
 
         async function updateSummary(month, year) {
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const summary = await db.collection('summary').doc(`${year}-${month}`).get();
-            if (summary.exists) {
-                const data = summary.data();
-                document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(data.stocks_and_bonds)}`;
-                document.getElementById('total-real_estate').innerText = `$${formatNumber(data.real_estate)}`;
-                document.getElementById('total-misc_assets').innerText = `$${formatNumber(data.misc_assets)}`;
-                document.getElementById('total-assets').innerText = `$${formatNumber(data.total_assets)}`;
-                document.getElementById('total-liabilities').innerText = `-$${formatNumber(data.total_liabilities)}`;
-                document.getElementById('net-worth').innerText = `$${formatNumber(data.net_worth)}`;
+            const monthIndex = monthNames.indexOf(month);
+
+            const summaryDoc = await db.collection('summary').doc(`${year}-${monthIndex}`).get();
+            if (summaryDoc.exists) {
+                const data = summaryDoc.data();
+                document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(data.stocks_and_bonds || 0)}`;
+                document.getElementById('total-real_estate').innerText = `$${formatNumber(data.real_estate || 0)}`;
+                document.getElementById('total-misc_assets').innerText = `$${formatNumber(data.misc_assets || 0)}`;
+                document.getElementById('total-assets').innerText = `$${formatNumber(data.total_assets || 0)}`;
+                document.getElementById('total-liabilities').innerText = `-$${formatNumber(data.total_liabilities || 0)}`;
+                document.getElementById('net-worth').innerText = `$${formatNumber(data.net_worth || 0)}`;
             }
         }
 
         async function renderChart(month, year) {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInMonth = new Date(year, monthNames.indexOf(month) + 1, 0).getDate();
             const credits = new Array(daysInMonth).fill(0);
             const debits = new Array(daysInMonth).fill(0);
             const dailyBalances = new Array(daysInMonth).fill(0);
-            const initialBalanceDoc = await db.collection('calendar').doc(`${year}-${month}-initial_balance`).get();
+            const initialBalanceDoc = await db.collection('calendar').doc(`${year}-${monthNames.indexOf(month)}-initial_balance`).get();
 
             if (initialBalanceDoc.exists) {
                 initialCashBalance = initialBalanceDoc.data().balance;
@@ -163,7 +168,7 @@
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayDoc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                const dayDoc = await db.collection('calendar').doc(`${year}-${monthNames.indexOf(month)}-day-${day}`).get();
                 if (dayDoc.exists) {
                     const data = dayDoc.data();
                     credits[day - 1] = data.credit || 0;
@@ -229,29 +234,27 @@
         function setupDropdowns() {
             const monthSelect = document.getElementById('month-select');
             const yearSelect = document.getElementById('year-select');
+
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
 
-            monthSelect.value = monthNames[currentMonth];
+            monthSelect.selectedIndex = currentMonth;
             yearSelect.value = currentYear;
 
-            monthSelect.addEventListener('change', () => {
-                const selectedMonth = monthNames.indexOf(monthSelect.value);
-                const selectedYear = parseInt(yearSelect.value, 10);
-                updateSummary(selectedMonth, selectedYear);
-                renderChart(selectedMonth, selectedYear);
-            });
-
-            yearSelect.addEventListener('change', () => {
-                const selectedMonth = monthNames.indexOf(monthSelect.value);
-                const selectedYear = parseInt(yearSelect.value, 10);
-                updateSummary(selectedMonth, selectedYear);
-                renderChart(selectedMonth, selectedYear);
-            });
+            monthSelect.addEventListener('change', loadData);
+            yearSelect.addEventListener('change', loadData);
         }
 
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function logOff() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
         }
     </script>
 </head>
@@ -328,7 +331,6 @@
     </div>
 </body>
 </html>
-
 
 
 
