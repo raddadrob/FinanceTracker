@@ -127,12 +127,6 @@
         .day input.debit {
             color: red;
         }
-        .day input.credit-desc {
-            color: green;
-        }
-        .day input.debit-desc {
-            color: red;
-        }
         .calendar-header {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -208,9 +202,9 @@
             let previousDayBalance = initialCashBalance;
             for (let day = 1; day <= daysInMonth; day++) {
                 const creditInput = document.getElementById(`credit-${day}`);
+                const creditDescriptionInput = document.getElementById(`credit-description-${day}`);
                 const debitInput = document.getElementById(`debit-${day}`);
-                const creditDescInput = document.getElementById(`credit-desc-${day}`);
-                const debitDescInput = document.getElementById(`debit-desc-${day}`);
+                const debitDescriptionInput = document.getElementById(`debit-description-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const cashBalance = previousDayBalance + credit - Math.abs(debit); // Subtract debit as a positive value
@@ -218,19 +212,15 @@
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
                 debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
-
-                const creditDesc = creditDescInput.value || '';
-                const debitDesc = debitDescInput.value || '';
+                previousDayBalance = cashBalance;
 
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
                     credit: credit,
                     debit: debit,
                     cash: cashBalance,
-                    creditDesc: creditDesc,
-                    debitDesc: debitDesc
+                    creditDescription: creditDescriptionInput.value || '',
+                    debitDescription: debitDescriptionInput.value || ''
                 });
-
-                previousDayBalance = cashBalance;
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
         }
@@ -268,9 +258,9 @@
                 dayElement.innerHTML = `
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="text" id="credit-desc-${day}" class="credit-desc" placeholder="Credit Description">
+                    <input type="text" id="credit-description-${day}" class="credit-description" placeholder="Description" style="color: green;" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
-                    <input type="text" id="debit-desc-${day}" class="debit-desc" placeholder="Debit Description">
+                    <input type="text" id="debit-description-${day}" class="debit-description" placeholder="Description" style="color: red;" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -280,9 +270,9 @@
                     const data = dayDoc.data();
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
-                    document.getElementById(`credit-desc-${day}`).value = data.creditDesc || '';
-                    document.getElementById(`debit-desc-${day}`).value = data.debitDesc || '';
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
+                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
+                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
                 }
             }
 
