@@ -50,7 +50,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button {
+        .logoff-button, .theme-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -58,16 +58,12 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover {
+        .logoff-button:hover, .theme-button:hover {
             background: #0c0;
-        }
-        .section {
-            margin-bottom: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
             margin-bottom: 20px;
         }
         th, td {
@@ -78,76 +74,32 @@
         th {
             background-color: #444;
         }
-        .form-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
-            color: #fff;
-        }
-        .form-group button {
-            padding: 8px 16px;
-            background-color: #0f0;
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #0c0;
-        }
-        .delta-positive {
-            color: green;
-        }
-        .delta-negative {
-            color: red;
-        }
-        th:nth-child(1), td:nth-child(1) {
-            width: 45%;
-        }
-        th:nth-child(2), td:nth-child(2) {
-            width: 15%;
-        }
-        th:nth-child(3), td:nth-child(3) {
-            width: 15%;
-        }
-        th:nth-child(4), td:nth-child(4) {
-            width: 15%;
-            text-align: center;
-        }
-        button {
-            margin: 2px;
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
         }
         .dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 20px;
         }
         .dropdown label {
-            margin-right: 10px;
             font-weight: bold;
         }
         .dropdown select {
             padding: 5px;
-            margin-right: 10px;
-            border-radius: 4px;
             border: 1px solid #555;
+            border-radius: 4px;
             background: #222;
             color: #fff;
         }
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
@@ -160,93 +112,147 @@
         };
 
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let cashFlowChart;
+        let chart;
+        let initialCashBalance = 0;
 
-        async function fetchCashFlowData(month, year) {
-            const cashFlowData = [];
-            const querySnapshot = await db.collection('calendar').where('month', '==', month).where('year', '==', year).get();
-            querySnapshot.forEach(doc => {
-                cashFlowData.push(doc.data());
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadData();
+                    setupDropdowns();
+                } else {
+                    window.location.href = 'login.html';
+                }
             });
-            return cashFlowData;
+        });
+
+        async function loadData() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            updateSummary(currentMonth, currentYear);
+            renderChart(currentMonth, currentYear);
         }
 
-        function renderChart(cashFlowData) {
-            const labels = Array.from({ length: 31 }, (_, i) => i + 1);
-            const credits = new Array(31).fill(0);
-            const debits = new Array(31).fill(0);
-            const balances = new Array(31).fill(0);
+        async function updateSummary(month, year) {
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const summary = await db.collection('summary').doc(`${year}-${month}`).get();
+            if (summary.exists) {
+                const data = summary.data();
+                document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(data.stocks_and_bonds)}`;
+                document.getElementById('total-real_estate').innerText = `$${formatNumber(data.real_estate)}`;
+                document.getElementById('total-misc_assets').innerText = `$${formatNumber(data.misc_assets)}`;
+                document.getElementById('total-assets').innerText = `$${formatNumber(data.total_assets)}`;
+                document.getElementById('total-liabilities').innerText = `-$${formatNumber(data.total_liabilities)}`;
+                document.getElementById('net-worth').innerText = `$${formatNumber(data.net_worth)}`;
+            }
+        }
 
-            cashFlowData.forEach(data => {
-                const day = data.day - 1;
-                credits[day] = data.credit || 0;
-                debits[day] = data.debit || 0;
-                balances[day] = data.cash || 0;
-            });
+        async function renderChart(month, year) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const credits = new Array(daysInMonth).fill(0);
+            const debits = new Array(daysInMonth).fill(0);
+            const dailyBalances = new Array(daysInMonth).fill(0);
+            const initialBalanceDoc = await db.collection('calendar').doc(`${year}-${month}-initial_balance`).get();
+
+            if (initialBalanceDoc.exists) {
+                initialCashBalance = initialBalanceDoc.data().balance;
+                dailyBalances[0] = initialCashBalance;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDoc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                if (dayDoc.exists) {
+                    const data = dayDoc.data();
+                    credits[day - 1] = data.credit || 0;
+                    debits[day - 1] = data.debit || 0;
+                    dailyBalances[day - 1] = (day === 1 ? initialCashBalance : dailyBalances[day - 2]) + credits[day - 1] - debits[day - 1];
+                }
+            }
 
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
-            if (cashFlowChart) {
-                cashFlowChart.destroy();
-            }
-            cashFlowChart = new Chart(ctx, {
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: Array.from({ length: daysInMonth }, (_, i) => i + 1),
                     datasets: [
                         {
                             label: 'Credits',
                             data: credits,
                             backgroundColor: 'rgba(0, 123, 255, 0.6)',
-                            stack: 'Stack 0'
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
                         },
                         {
                             label: 'Debits',
                             data: debits,
                             backgroundColor: 'rgba(255, 0, 0, 0.6)',
-                            stack: 'Stack 0'
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
                         },
                         {
-                            type: 'line',
                             label: 'Daily Cash Balance',
-                            data: balances,
-                            borderColor: 'rgba(0, 255, 0, 0.8)',
-                            borderWidth: 2,
+                            type: 'line',
+                            data: dailyBalances,
+                            backgroundColor: 'rgba(0, 255, 0, 0.3)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
                             fill: false,
-                            tension: 0.1,
-                            yAxisID: 'y'
+                            yAxisID: 'y1'
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
                     scales: {
-                        x: {
-                            beginAtZero: true
-                        },
                         y: {
-                            beginAtZero: true,
-                            stacked: true,
+                            type: 'linear',
+                            display: true,
                             position: 'left'
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
                         }
                     }
                 }
             });
         }
 
-        async function updateChart() {
-            const month = document.getElementById('month-select').value;
-            const year = document.getElementById('year-select').value;
-            const cashFlowData = await fetchCashFlowData(month, year);
-            renderChart(cashFlowData);
+        function setupDropdowns() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            monthSelect.value = monthNames[currentMonth];
+            yearSelect.value = currentYear;
+
+            monthSelect.addEventListener('change', () => {
+                const selectedMonth = monthNames.indexOf(monthSelect.value);
+                const selectedYear = parseInt(yearSelect.value, 10);
+                updateSummary(selectedMonth, selectedYear);
+                renderChart(selectedMonth, selectedYear);
+            });
+
+            yearSelect.addEventListener('change', () => {
+                const selectedMonth = monthNames.indexOf(monthSelect.value);
+                const selectedYear = parseInt(yearSelect.value, 10);
+                updateSummary(selectedMonth, selectedYear);
+                renderChart(selectedMonth, selectedYear);
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('month-select').addEventListener('change', updateChart);
-            document.getElementById('year-select').addEventListener('change', updateChart);
-            updateChart();
-        });
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
     </script>
 </head>
 <body>
@@ -262,7 +268,7 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content" style="flex: 1;">
+        <div id="content">
             <div class="section">
                 <h2>Summary</h2>
                 <table>
@@ -280,11 +286,11 @@
                     </tr>
                     <tr>
                         <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
+                        <td id="total-assets" style="text-decoration: underline;">$0</td>
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities" style="color: red;">$0</td>
+                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">-$0</td>
                     </tr>
                     <tr class="total">
                         <th>Net Worth</th>
@@ -295,25 +301,24 @@
             <div class="dropdown">
                 <label for="month-select">Select Month:</label>
                 <select id="month-select">
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
                 </select>
                 <select id="year-select">
-                    <option value="2022">2022</option>
-                    <option value="2023">2023</option>
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                    <option value="2026">2026</option>
+                    <option>2021</option>
+                    <option>2022</option>
+                    <option>2023</option>
+                    <option>2024</option>
                 </select>
             </div>
             <div class="chart-container">
