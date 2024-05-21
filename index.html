@@ -78,50 +78,36 @@
         th {
             background-color: #444;
         }
-        .form-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
+        th, td {
             color: #fff;
         }
-        .form-group button {
-            padding: 8px 16px;
-            background-color: #0f0;
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #0c0;
-        }
-        th:nth-child(1), td:nth-child(1) {
-            width: 45%;
-        }
-        th:nth-child(2), td:nth-child(2) {
-            width: 55%;
+        #total-liabilities {
+            color: red;
+            text-decoration: underline double;
         }
         .chart-container {
             margin-top: 20px;
         }
-        #chart {
-            background: #222;
-            padding: 20px;
+        .chart-container canvas {
+            background: #333;
             border-radius: 8px;
         }
-        select {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
+        .dropdown {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .dropdown select {
+            padding: 10px;
             background: #444;
             color: #0f0;
-            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -142,8 +128,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        let cashFlowChart;
+        let chart;
 
         function logOff() {
             auth.signOut().then(() => {
@@ -156,8 +141,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    loadSummaryData();
-                    createChart();
+                    loadSummary();
                     document.getElementById('month-select').addEventListener('change', updateChart);
                 } else {
                     window.location.href = 'login.html';
@@ -165,42 +149,61 @@
             });
         });
 
-        async function loadSummaryData() {
-            const totalStocksAndBonds = await getTotalValue('stocks_and_bonds');
-            const totalRealEstate = await getTotalValue('real_estate');
-            const totalMiscAssets = await getTotalValue('misc_assets');
-            const totalLiabilities = await getTotalValue('liabilities');
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
+        async function loadSummary() {
+            const stocksAndBonds = await getTotal('stocks_and_bonds');
+            const realEstate = await getTotal('real_estate');
+            const miscAssets = await getTotal('misc_assets');
+            const liabilities = await getTotal('liabilities');
+            const totalAssets = stocksAndBonds + realEstate + miscAssets;
+            const netWorth = totalAssets - liabilities;
 
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(stocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(realEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(miscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
-            document.getElementById('total-liabilities').style.color = 'red';
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(liabilities))}`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+
+            const currentMonth = new Date().getMonth();
+            const monthName = new Date().toLocaleString('default', { month: 'long' });
+            document.getElementById('month-select').value = monthName;
+            await loadChartData(currentMonth);
         }
 
-        async function getTotalValue(collection) {
+        async function getTotal(collection) {
             const snapshot = await db.collection(collection).get();
-            return snapshot.docs.reduce((sum, doc) => sum + doc.data().value, 0);
+            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
         }
 
-        function formatNumber(value) {
-            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
+        async function loadChartData(month) {
+            const year = new Date().getFullYear();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const cashFlowData = [];
 
-        function createChart() {
-            const ctx = document.getElementById('chart').getContext('2d');
-            cashFlowChart = new Chart(ctx, {
+            for (let day = 1; day <= daysInMonth; day++) {
+                const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    cashFlowData.push(data.cash);
+                } else {
+                    cashFlowData.push(0);
+                }
+            }
+
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: [],
+                    labels: labels,
                     datasets: [{
                         label: 'Daily Cash Balance',
-                        data: [],
-                        backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                        data: cashFlowData,
+                        backgroundColor: 'rgba(0, 255, 0, 0.5)',
                         borderColor: 'rgba(0, 255, 0, 1)',
                         borderWidth: 1
                     }]
@@ -213,6 +216,11 @@
                         y: {
                             beginAtZero: true
                         }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
                     }
                 }
             });
@@ -220,30 +228,12 @@
 
         async function updateChart() {
             const selectedMonth = document.getElementById('month-select').value;
-            const cashFlowData = await getCashFlowData(selectedMonth);
-
-            cashFlowChart.data.labels = cashFlowData.labels;
-            cashFlowChart.data.datasets[0].data = cashFlowData.data;
-            cashFlowChart.update();
+            const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
+            await loadChartData(monthIndex);
         }
 
-        async function getCashFlowData(month) {
-            const year = new Date().getFullYear();
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-            const data = [];
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const docId = `${year}-${month}-${day}`;
-                const doc = await db.collection('calendar').doc(docId).get();
-                if (doc.exists) {
-                    data.push(doc.data().cash);
-                } else {
-                    data.push(0);
-                }
-            }
-
-            return { labels, data };
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
     </script>
 </head>
@@ -268,57 +258,56 @@
                         <th>Total Stocks & Bonds</th>
                         <td id="total-stocks_and_bonds">$0</td>
                     </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Assets</th>
-                        <td id="total-assets" style="text-decoration: underline;">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">-$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
+                                    <tr>
+                    <th>Total Real Estate</th>
+                    <td id="total-real_estate">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Misc. Assets</th>
+                    <td id="total-misc_assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Assets</th>
+                    <td id="total-assets">$0</td>
+                </tr>
+                <tr>
+                    <th>Total Liabilities</th>
+                    <td id="total-liabilities">-$0</td>
+                </tr>
+                <tr class="total">
+                    <th>Net Worth</th>
+                    <td id="net-worth">$0</td>
+                </tr>
+            </table>
+        </div>
+        <div class="section">
+            <h2>Cash Flow</h2>
+            <div class="dropdown">
+                <label for="month-select">Select Month: </label>
+                <select id="month-select">
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
             </div>
-            <div class="section chart-container">
-                <h2>Cash Flow</h2>
-                <div>
-                    <label for="month-select">Select Month:</label>
-                    <select id="month-select">
-                        <option value="1">January</option>
-                        <option value="2">February</option>
-                        <option value="3">March</option>
-                        <option value="4">April</option>
-                        <option value="5">May</option>
-                        <option value="6">June</option>
-                        <option value="7">July</option>
-                        <option value="8">August</option>
-                        <option value="9">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
-                    </select>
-                </div>
-                <canvas id="chart"></canvas>
+            <div class="chart-container">
+                <canvas id="cashFlowChart"></canvas>
             </div>
         </div>
     </div>
+</div>
 </body>
 </html>
 ```
-
-
-
 
 
 
