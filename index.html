@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -78,18 +78,41 @@
         th {
             background-color: #444;
         }
+        th, td {
+            color: #fff;
+        }
+        #total-liabilities {
+            color: red;
+            text-decoration: underline double;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        .chart-container canvas {
+            background: #333;
+            border-radius: 8px;
+        }
         .dropdown {
             display: flex;
             align-items: center;
-            gap: 10px;
+            margin-bottom: 20px;
         }
-        .chart-container {
-            position: relative;
-            height: 400px;
+        .dropdown label {
+            margin-right: 10px;
+            color: #0f0;
         }
-        canvas {
-            background: #333;
-            border-radius: 8px;
+        .dropdown select {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -110,33 +133,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        async function fetchSummaryData() {
-            const totalStocksAndBonds = await calculateTotal('stocks_and_bonds');
-            const totalRealEstate = await calculateTotal('real_estate');
-            const totalMiscAssets = await calculateTotal('misc_assets');
-            const totalLiabilities = await calculateTotal('liabilities');
-
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
-
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
-            document.getElementById('total-liabilities').style.color = 'red';
-            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
-        }
-
-        async function calculateTotal(collection) {
-            const snapshot = await db.collection(collection).get();
-            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
-        }
-
-        function formatNumber(value) {
-            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
+        let chart;
 
         function logOff() {
             auth.signOut().then(() => {
@@ -146,97 +143,117 @@
             });
         }
 
-        async function fetchChartData(month, year) {
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const credits = Array(daysInMonth).fill(0);
-            const debits = Array(daysInMonth).fill(0);
-            const cashBalances = Array(daysInMonth).fill(0);
-
-            const snapshot = await db.collection('calendar').where('year', '==', year).where('month', '==', month).get();
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                const day = data.day - 1;
-                credits[day] = data.credit;
-                debits[day] = data.debit;
-                cashBalances[day] = data.cash;
-            });
-
-            return { credits, debits, cashBalances };
-        }
-
-        function updateChart(chart, data) {
-            chart.data.datasets[0].data = data.credits;
-            chart.data.datasets[1].data = data.debits;
-            chart.data.datasets[2].data = data.cashBalances;
-            chart.update();
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            auth.onAuthStateChanged(async (user) => {
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
                 if (user) {
-                    await fetchSummaryData();
-
-                    const ctx = document.getElementById('cashFlowChart').getContext('2d');
-                    const cashFlowChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: Array.from({ length: 31 }, (_, i) => i + 1),
-                            datasets: [
-                                {
-                                    label: 'Credits',
-                                    backgroundColor: 'blue',
-                                    data: []
-                                },
-                                {
-                                    label: 'Debits',
-                                    backgroundColor: 'red',
-                                    data: []
-                                },
-                                {
-                                    label: 'Daily Cash Balance',
-                                    type: 'line',
-                                    backgroundColor: 'green',
-                                    borderColor: 'green',
-                                    fill: false,
-                                    data: []
-                                }
-                            ]
-                        },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-
-                    const monthSelect = document.getElementById('month-select');
-                    const yearSelect = document.getElementById('year-select');
-
-                    monthSelect.addEventListener('change', async () => {
-                        const month = monthSelect.selectedIndex + 1;
-                        const year = parseInt(yearSelect.value);
-                        const chartData = await fetchChartData(month, year);
-                        updateChart(cashFlowChart, chartData);
-                    });
-
-                    yearSelect.addEventListener('change', async () => {
-                        const month = monthSelect.selectedIndex + 1;
-                        const year = parseInt(yearSelect.value);
-                        const chartData = await fetchChartData(month, year);
-                        updateChart(cashFlowChart, chartData);
-                    });
-
-                    const initialMonth = monthSelect.selectedIndex + 1;
-                    const initialYear = parseInt(yearSelect.value);
-                    const initialChartData = await fetchChartData(initialMonth, initialYear);
-                    updateChart(cashFlowChart, initialChartData);
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
                 } else {
                     window.location.href = 'login.html';
                 }
             });
         });
+
+        async function loadSummary() {
+            const stocksAndBonds = await getTotal('stocks_and_bonds');
+            const realEstate = await getTotal('real_estate');
+            const miscAssets = await getTotal('misc_assets');
+            const liabilities = await getTotal('liabilities');
+            const totalAssets = stocksAndBonds + realEstate + miscAssets;
+            const netWorth = totalAssets - liabilities;
+
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(stocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(realEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(miscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(liabilities))}`;
+            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+
+            const currentMonth = new Date().getMonth();
+            const monthName = new Date().toLocaleString('default', { month: 'long' });
+            const currentYear = new Date().getFullYear();
+            document.getElementById('month-select').value = monthName;
+            document.getElementById('year-select').value = currentYear;
+            await loadChartData(currentYear, currentMonth);
+        }
+
+        async function getTotal(collection) {
+            const snapshot = await db.collection(collection).get();
+            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
+        }
+
+        async function loadChartData(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const credits = Array(daysInMonth).fill(0);
+            const debits = Array(daysInMonth).fill(0);
+            const cashBalances = Array(daysInMonth).fill(0);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    credits[day - 1] = data.credit;
+                    debits[day - 1] = data.debit;
+                    cashBalances[day - 1] = data.cash;
+                }
+            }
+
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Credits',
+                            backgroundColor: 'rgba(0, 0, 255, 0.5)',
+                            borderColor: 'rgba(0, 0, 255, 1)',
+                            borderWidth: 1,
+                            data: credits
+                        },
+                        {
+                            label: 'Debits',
+                            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1,
+                            data: debits
+                        },
+                        {
+                            label: 'Daily Cash Balance',
+                            type: 'line',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            fill: false,
+                            data: cashBalances
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateChart() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
+            const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
+            await loadChartData(selectedYear, monthIndex);
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
     </script>
 </head>
 <body>
@@ -252,7 +269,7 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content">
+        <div id="content" style="flex: 1;">
             <div class="section">
                 <h2>Summary</h2>
                 <table>
@@ -274,35 +291,38 @@
                     </tr>
                     <tr>
                         <th>Total Liabilities</th>
-                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">-$0</td>
+                        <td id="total-liabilities">-$0</td>
                     </tr>
-                    <tr>
+                    <tr class="total">
                         <th>Net Worth</th>
                         <td id="net-worth">$0</td>
                     </tr>
                 </table>
             </div>
             <div class="section">
+                <h2>Cash Flow</h2>
                 <div class="dropdown">
-                    <label for="month-select">Select Month:</label>
+                    <label>Select Month: </label>
                     <select id="month-select">
-                        <option value="1">January</option>
-                        <option value="2">February</option>
-                        <option value="3">March</option>
-                        <option value="4">April</option>
-                        <option value="5">May</option>
-                        <option value="6" selected>June</option>
-                        <option value="7">July</option>
-                        <option value="8">August</option>
-                        <option value="9">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
                     </select>
                     <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
                         <option value="2023">2023</option>
-                        <option value="2024" selected>2024</option>
-                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
                     </select>
                 </div>
                 <div class="chart-container">
@@ -313,6 +333,7 @@
     </div>
 </body>
 </html>
+
 
 
 
