@@ -94,8 +94,12 @@
         }
         .dropdown {
             display: flex;
-            justify-content: center;
+            align-items: center;
             margin-bottom: 20px;
+        }
+        .dropdown label {
+            margin-right: 10px;
+            color: #0f0;
         }
         .dropdown select {
             padding: 10px;
@@ -104,13 +108,11 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 10px;
         }
         .dropdown select:focus {
             outline: none;
             box-shadow: 0 0 5px #0f0;
-        }
-        .dropdown label {
-            margin-right: 10px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -289,7 +291,7 @@
             <div class="section">
                 <h2>Cash Flow</h2>
                 <div class="dropdown">
-                    <label for="month-select">Select Month: </label>
+                    <label>Select Month: </label>
                     <select id="month-select">
                         <option value="January">January</option>
                         <option value="February">February</option>
@@ -304,7 +306,6 @@
                         <option value="November">November</option>
                         <option value="December">December</option>
                     </select>
-                    <label for="year-select">Select Year: </label>
                     <select id="year-select">
                         <option value="2020">2020</option>
                         <option value="2021">2021</option>
@@ -321,7 +322,6 @@
     </div>
 </body>
 </html>
-
 
 
 
