@@ -61,9 +61,13 @@
         .logoff-button:hover {
             background: #0c0;
         }
+        .section {
+            margin-bottom: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             margin-bottom: 20px;
         }
         th, td {
@@ -74,36 +78,174 @@
         th {
             background-color: #444;
         }
-        .summary-table th {
-            background-color: transparent;
-        }
-        .summary-table td {
-            font-weight: bold;
-        }
-        .summary-table tr:nth-child(4) td {
-            text-decoration: underline;
-        }
-        .summary-table tr:nth-child(5) td {
-            text-decoration: underline double;
-            color: red;
-        }
-        .summary-table tr:last-child td {
-            font-size: 1.2em;
-        }
-        .dropdown-container {
+        .form-group {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .dropdown-container select {
-            padding: 10px;
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+        }
+        .form-group button {
+            padding: 8px 16px;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0c0;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 45%;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 55%;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        #chart {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid #555;
             border-radius: 4px;
             background: #444;
-            color: #fff;
-            border: 1px solid #555;
+            color: #0f0;
+            margin-left: 10px;
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+            authDomain: "cockrumfinance.firebaseapp.com",
+            projectId: "cockrumfinance",
+            storageBucket: "cockrumfinance.appspot.com",
+            messagingSenderId: "446623626941",
+            appId: "1:446623626941:web:3dc1d2e435caf61d04e9d4",
+            measurementId: "G-JFRC4K0BBF"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let cashFlowChart;
+
+        function logOff() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadSummaryData();
+                    createChart();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+        async function loadSummaryData() {
+            const totalStocksAndBonds = await getTotalValue('stocks_and_bonds');
+            const totalRealEstate = await getTotalValue('real_estate');
+            const totalMiscAssets = await getTotalValue('misc_assets');
+            const totalLiabilities = await getTotalValue('liabilities');
+            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
+            const netWorth = totalAssets - totalLiabilities;
+
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').style.color = 'red';
+            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+        }
+
+        async function getTotalValue(collection) {
+            const snapshot = await db.collection(collection).get();
+            return snapshot.docs.reduce((sum, doc) => sum + doc.data().value, 0);
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function createChart() {
+            const ctx = document.getElementById('chart').getContext('2d');
+            cashFlowChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Daily Cash Balance',
+                        data: [],
+                        backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                        borderColor: 'rgba(0, 255, 0, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateChart() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const cashFlowData = await getCashFlowData(selectedMonth);
+
+            cashFlowChart.data.labels = cashFlowData.labels;
+            cashFlowChart.data.datasets[0].data = cashFlowData.data;
+            cashFlowChart.update();
+        }
+
+        async function getCashFlowData(month) {
+            const year = new Date().getFullYear();
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            const data = [];
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const docId = `${year}-${month}-${day}`;
+                const doc = await db.collection('calendar').doc(docId).get();
+                if (doc.exists) {
+                    data.push(doc.data().cash);
+                } else {
+                    data.push(0);
+                }
+            }
+
+            return { labels, data };
+        }
+    </script>
 </head>
 <body>
     <div id="finance-tracker" class="container">
@@ -121,7 +263,7 @@
         <div id="content" style="flex: 1;">
             <div class="section">
                 <h2>Summary</h2>
-                <table class="summary-table">
+                <table>
                     <tr>
                         <th>Total Stocks & Bonds</th>
                         <td id="total-stocks_and_bonds">$0</td>
@@ -148,145 +290,32 @@
                     </tr>
                 </table>
             </div>
-            <div class="dropdown-container">
-                <label for="month-select">Select Month: </label>
-                <select id="month-select" onchange="loadCashFlowData()">
-                    <option value="0">January</option>
-                    <option value="1">February</option>
-                    <option value="2">March</option>
-                    <option value="3">April</option>
-                    <option value="4">May</option>
-                    <option value="5">June</option>
-                    <option value="6">July</option>
-                    <option value="7">August</option>
-                    <option value="8">September</option>
-                    <option value="9">October</option>
-                    <option value="10">November</option>
-                    <option value="11">December</option>
-                </select>
-            </div>
-            <div class="section">
+            <div class="section chart-container">
                 <h2>Cash Flow</h2>
-                <canvas id="cashFlowChart" width="400" height="200"></canvas>
+                <div>
+                    <label for="month-select">Select Month:</label>
+                    <select id="month-select">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <canvas id="chart"></canvas>
             </div>
         </div>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
-            authDomain: "cockrumfinance.firebaseapp.com",
-            projectId: "cockrumfinance",
-            storageBucket: "cockrumfinance.appspot.com",
-            messagingSenderId: "446623626941",
-            appId: "1:446623626941:web:3dc1d2e435caf61d04e9d4",
-            measurementId: "G-JFRC4K0BBF"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    loadSummaryData();
-                    loadCashFlowData();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
-        });
-
-        async function loadSummaryData() {
-            const totalStocksAndBonds = await getTotalValue('stocks_and_bonds');
-            const totalRealEstate = await getTotalValue('real_estate');
-            const totalMiscAssets = await getTotalValue('misc_assets');
-            const totalLiabilities = await getTotalValue('liabilities');
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
-
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(totalLiabilities))}`;
-            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
-        }
-
-        async function getTotalValue(collection) {
-            const snapshot = await db.collection(collection).get();
-            return snapshot.docs.reduce((total, doc) => total + (doc.data().value || 0), 0);
-        }
-
-        async function loadCashFlowData() {
-            const cashFlowData = [];
-            const cashFlowLabels = [];
-            const monthSelect = document.getElementById('month-select');
-            const selectedMonth = parseInt(monthSelect.value);
-            const currentYear = new Date().getFullYear();
-
-            for (let day = 1; day <= 31; day++) {
-                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${selectedMonth}-day-${day}`).get();
-                if (dayDoc.exists) {
-                    const data = dayDoc.data();
-                    cashFlowData.push(data.cash);
-                    cashFlowLabels.push(day.toString());
-                } else {
-                    cashFlowData.push(null); // Push null if data does not exist
-                    cashFlowLabels.push(day.toString());
-                }
-            }
-
-            renderCashFlowChart(cashFlowLabels, cashFlowData);
-        }
-
-        function renderCashFlowChart(labels, data) {
-            const ctx = document.getElementById('cashFlowChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Daily Cash Balance',
-                        data: data,
-                        backgroundColor: 'rgba(0, 255, 0, 0.2)',
-                        borderColor: 'rgba(0, 255, 0, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + formatNumber(value);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function formatNumber(value) {
-            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        function logOff() {
-            auth.signOut().then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-    </script>
 </body>
 </html>
-
+```
 
 
 
