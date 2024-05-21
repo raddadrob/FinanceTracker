@@ -109,6 +109,9 @@
             outline: none;
             box-shadow: 0 0 5px #0f0;
         }
+        .dropdown label {
+            margin-right: 10px;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -143,6 +146,7 @@
                 if (user) {
                     loadSummary();
                     document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -166,8 +170,10 @@
 
             const currentMonth = new Date().getMonth();
             const monthName = new Date().toLocaleString('default', { month: 'long' });
+            const currentYear = new Date().getFullYear();
             document.getElementById('month-select').value = monthName;
-            await loadChartData(currentMonth);
+            document.getElementById('year-select').value = currentYear;
+            await loadChartData(currentYear, currentMonth);
         }
 
         async function getTotal(collection) {
@@ -175,8 +181,7 @@
             return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
         }
 
-        async function loadChartData(month) {
-            const year = new Date().getFullYear();
+        async function loadChartData(year, month) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const cashFlowData = [];
 
@@ -228,8 +233,9 @@
 
         async function updateChart() {
             const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
             const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
-            await loadChartData(monthIndex);
+            await loadChartData(selectedYear, monthIndex);
         }
 
         function formatNumber(value) {
@@ -258,57 +264,63 @@
                         <th>Total Stocks & Bonds</th>
                         <td id="total-stocks_and_bonds">$0</td>
                     </tr>
-                                    <tr>
-                    <th>Total Real Estate</th>
-                    <td id="total-real_estate">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Misc. Assets</th>
-                    <td id="total-misc_assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Assets</th>
-                    <td id="total-assets">$0</td>
-                </tr>
-                <tr>
-                    <th>Total Liabilities</th>
-                    <td id="total-liabilities">-$0</td>
-                </tr>
-                <tr class="total">
-                    <th>Net Worth</th>
-                    <td id="net-worth">$0</td>
-                </tr>
-            </table>
-        </div>
-        <div class="section">
-            <h2>Cash Flow</h2>
-            <div class="dropdown">
-                <label for="month-select">Select Month: </label>
-                <select id="month-select">
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                </select>
+                    <tr>
+                        <th>Total Real Estate</th>
+                        <td id="total-real_estate">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Misc. Assets</th>
+                        <td id="total-misc_assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Assets</th>
+                        <td id="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Liabilities</th>
+                        <td id="total-liabilities">-$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Net Worth</th>
+                        <td id="net-worth">$0</td>
+                    </tr>
+                </table>
             </div>
-            <div class="chart-container">
-                <canvas id="cashFlowChart"></canvas>
+            <div class="section">
+                <h2>Cash Flow</h2>
+                <div class="dropdown">
+                    <label for="month-select">Select Month: </label>
+                    <select id="month-select">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <label for="year-select">Select Year: </label>
+                    <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 </html>
-```
-
 
 
 
