@@ -84,7 +84,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE",
+            apiKey: "AIzaSyAwfLKFTpm75Tz34Zdbxz6A7p9uCqZi4K4",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -105,51 +105,45 @@
         }
 
         function loadMaps() {
-            if (typeof google !== 'undefined') {
-                const houses = [
-                    { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
-                    { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
-                ];
+            const houses = [
+                { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
+                { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
+            ];
 
-                houses.forEach((house, index) => {
-                    const geocoder = new google.maps.Geocoder();
-                    geocoder.geocode({ address: house.address }, (results, status) => {
-                        if (status === 'OK') {
-                            const map = new google.maps.Map(document.getElementById(`map-${index}`), {
-                                zoom: 15,
-                                center: results[0].geometry.location
-                            });
-                            new google.maps.Marker({
-                                position: results[0].geometry.location,
-                                map: map
-                            });
-                        } else {
-                            console.error(`Geocode was not successful for the following reason: ${status}`);
-                        }
-                    });
+            houses.forEach((house, index) => {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: house.address }, (results, status) => {
+                    if (status === 'OK') {
+                        const map = new google.maps.Map(document.getElementById(`map-${index}`), {
+                            zoom: 15,
+                            center: results[0].geometry.location
+                        });
+                        new google.maps.Marker({
+                            position: results[0].geometry.location,
+                            map: map
+                        });
+                    } else {
+                        console.error(`Geocode was not successful for the following reason: ${status}`);
+                    }
                 });
-            } else {
-                console.error('Google Maps API not loaded correctly');
-            }
+            });
         }
 
         function initialize() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    loadMaps();
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=NEW_API_KEY_HERE&callback=loadMaps`;
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
                 } else {
                     window.location.href = 'login.html';
                 }
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE&callback=initialize`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        });
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </head>
 <body>
@@ -181,6 +175,7 @@
     </div>
 </body>
 </html>
+
 
 
 
