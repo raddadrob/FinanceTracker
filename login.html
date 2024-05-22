@@ -17,7 +17,6 @@
             height: 100vh;
         }
         .container {
-            width: 100%;
             max-width: 400px;
             background: #333;
             padding: 20px;
@@ -28,58 +27,35 @@
             text-align: center;
             color: #0f0;
         }
-        .form-group {
-            margin-bottom: 15px;
+        form {
+            display: flex;
+            flex-direction: column;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: calc(100% - 20px);
+        input {
+            margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #555;
             border-radius: 4px;
             background: #222;
             color: #fff;
-            margin: 0 auto;
-            display: block;
         }
-        .form-group button {
-            width: calc(100% - 20px);
-            padding: 10px;
-            background-color: #0f0;
+        button {
+            background: #0f0;
             color: #000;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 auto;
-            display: block;
-        }
-        .form-group button:hover {
-            background-color: #0c0;
-        }
-        .toggle-button {
-            width: calc(100% - 20px);
             padding: 10px;
-            background-color: #444;
-            color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
-            margin: 0 auto;
-            display: block;
         }
-        .toggle-button:hover {
-            background-color: #555;
+        button:hover {
+            background: #0c0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+            apiKey: "AIzaSyAwfLKFTpm75Tz34Zdbxz6A7p9uCqZi4K4",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -91,15 +67,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        const invitationCode = "smartypants71";  // Define the invitation code
-
-        function toggleForm() {
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
-            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
-            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
-        }
-
         function login() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -108,69 +75,43 @@
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
-                    console.error('Error signing in:', error);
-                    alert('Error signing in: ' + error.message);
+                    console.error('Error logging in:', error);
                 });
         }
 
         function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            const inviteCode = document.getElementById('invitation-code').value;
-
-            if (inviteCode !== invitationCode) {
-                alert('Invalid invitation code.');
-                return;
-            }
-
             auth.createUserWithEmailAndPassword(email, password)
                 .then(() => {
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
                     console.error('Error registering:', error);
-                    alert('Error registering: ' + error.message);
                 });
         }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
-        <div id="login-form">
-            <div class="form-group">
-                <label for="login-email">Email:</label>
-                <input type="email" id="login-email" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label for="login-password">Password:</label>
-                <input type="password" id="login-password" placeholder="Enter your password">
-            </div>
-            <div class="form-group">
-                <button onclick="login()">Login</button>
-            </div>
-            <button class="toggle-button" onclick="toggleForm()">Register as a new user</button>
-        </div>
-        <div id="register-form" style="display: none;">
-            <div class="form-group">
-                <label for="register-email">Email:</label>
-                <input type="email" id="register-email" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label for="register-password">Password:</label>
-                <input type="password" id="register-password" placeholder="Enter your password">
-            </div>
-            <div class="form-group">
-                <label for="invitation-code">Invitation Code:</label>
-                <input type="text" id="invitation-code" placeholder="Enter the invitation code">
-            </div>
-            <div class="form-group">
-                <button onclick="register()">Register</button>
-            </div>
-            <button class="toggle-button" onclick="toggleForm()">Back to Login</button>
-        </div>
+        <h1>Cockrum Finances</h1>
+        <form onsubmit="event.preventDefault(); login();">
+            <input type="email" id="login-email" placeholder="Enter your email" required>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+            <button type="submit">Login</button>
+        </form>
+        <form onsubmit="event.preventDefault(); register();">
+            <input type="email" id="register-email" placeholder="Enter your email" required>
+            <input type="password" id="register-password" placeholder="Enter your password" required>
+            <button type="submit">Register</button>
+        </form>
     </div>
 </body>
 </html>
-
 
