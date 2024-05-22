@@ -10,40 +10,38 @@
             background-color: #000;
             color: #fff;
             margin: 0;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            max-width: 400px;
-            margin: 0 auto;
             background: #333;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
         h1 {
-            text-align: center;
             color: #0f0;
+            margin-bottom: 20px;
         }
         input[type="email"], input[type="password"] {
             width: 100%;
             padding: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
+            border: none;
             border-radius: 4px;
-            border: 1px solid #555;
-            background: #222;
-            color: #fff;
         }
         button {
-            padding: 10px 20px;
+            width: 100%;
+            padding: 10px;
             background: #0f0;
             color: #000;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
+            margin: 10px 0;
         }
         button:hover {
             background: #0c0;
@@ -52,7 +50,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
-        // Your Firebase configuration object
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
@@ -63,56 +60,47 @@
             measurementId: "G-JFRC4K0BBF"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        function logIn() {
+        async function login(event) {
+            event.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in 
-                    console.log("User logged in: ", userCredential.user);
-                    // Redirect to dashboard or home page
-                    window.location.href = 'index.html';
-                })
-                .catch((error) => {
-                    console.error("Error logging in: ", error);
-                    alert("Login failed: " + error.message);
-                });
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error logging in:', error);
+            }
         }
 
-        function register() {
+        async function register(event) {
+            event.preventDefault();
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in 
-                    console.log("User registered: ", userCredential.user);
-                    // Redirect to dashboard or home page
-                    window.location.href = 'index.html';
-                })
-                .catch((error) => {
-                    console.error("Error registering: ", error);
-                    alert("Registration failed: " + error.message);
-                });
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error registering:', error);
+            }
         }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Cockrum Finances</h1>
-        <div>
-            <input type="email" id="login-email" placeholder="Enter your email">
-            <input type="password" id="login-password" placeholder="Enter your password">
-            <button onclick="logIn()">Login</button>
-        </div>
-        <div>
-            <input type="email" id="register-email" placeholder="Enter your email">
-            <input type="password" id="register-password" placeholder="Enter your password">
-            <button onclick="register()">Register</button>
-        </div>
+        <form id="login-form" onsubmit="login(event)">
+            <input type="email" id="login-email" placeholder="Enter your email" required>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+            <button type="submit">Login</button>
+        </form>
+        <form id="register-form" onsubmit="register(event)">
+            <input type="email" id="register-email" placeholder="Enter your email" required>
+            <input type="password" id="register-password" placeholder="Enter your password" required>
+            <button type="submit">Register</button>
+        </form>
     </div>
 </body>
 </html>
