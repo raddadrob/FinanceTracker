@@ -143,9 +143,14 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initialize);
+        document.addEventListener('DOMContentLoaded', () => {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE&callback=initialize`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        });
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE&callback=initialize"></script>
 </head>
 <body>
     <div id="finance-tracker" class="container">
