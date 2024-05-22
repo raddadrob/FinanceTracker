@@ -104,16 +104,6 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (!user) {
-                    window.location.href = 'login.html';
-                }
-            });
-
-            loadMaps();
-        });
-
         function loadMaps() {
             const houses = [
                 { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
@@ -138,8 +128,22 @@
                 });
             });
         }
+
+        function initialize() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log('User is authenticated');
+                    loadMaps();
+                } else {
+                    console.log('User is not authenticated, redirecting to login page');
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE&callback=loadMaps"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE&callback=initialize"></script>
 </head>
 <body>
     <div id="finance-tracker" class="container">
