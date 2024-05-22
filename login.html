@@ -11,42 +11,39 @@
             color: #fff;
             margin: 0;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
         .container {
             max-width: 400px;
+            margin: 0 auto;
             background: #333;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         h1 {
             text-align: center;
             color: #0f0;
         }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        input {
-            margin-bottom: 10px;
+        input[type="email"], input[type="password"] {
+            width: 100%;
             padding: 10px;
-            border: 1px solid #555;
+            margin: 5px 0;
             border-radius: 4px;
+            border: 1px solid #555;
             background: #222;
             color: #fff;
         }
         button {
+            padding: 10px 20px;
             background: #0f0;
             color: #000;
-            padding: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
         button:hover {
             background: #0c0;
@@ -55,8 +52,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
+        // Your Firebase configuration object
         const firebaseConfig = {
-            apiKey: "AIzaSyAwfLKFTpm75Tz34Zdbxz6A7p9uCqZi4K4",
+            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -65,55 +63,56 @@
             measurementId: "G-JFRC4K0BBF"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        function login(event) {
-            event.preventDefault();
+        function logIn() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
+                .then((userCredential) => {
+                    // Signed in 
+                    console.log("User logged in: ", userCredential.user);
+                    // Redirect to dashboard or home page
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
-                    console.error('Error logging in:', error);
+                    console.error("Error logging in: ", error);
+                    alert("Login failed: " + error.message);
                 });
         }
 
-        function register(event) {
-            event.preventDefault();
+        function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
+                .then((userCredential) => {
+                    // Signed in 
+                    console.log("User registered: ", userCredential.user);
+                    // Redirect to dashboard or home page
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
-                    console.error('Error registering:', error);
+                    console.error("Error registering: ", error);
+                    alert("Registration failed: " + error.message);
                 });
         }
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                window.location.href = 'index.html';
-            }
-        });
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Cockrum Finances</h1>
-        <form onsubmit="login(event)">
-            <input type="email" id="login-email" placeholder="Enter your email" required>
-            <input type="password" id="login-password" placeholder="Enter your password" required>
-            <button type="submit">Login</button>
-        </form>
-        <form onsubmit="register(event)">
-            <input type="email" id="register-email" placeholder="Enter your email" required>
-            <input type="password" id="register-password" placeholder="Enter your password" required>
-            <button type="submit">Register</button>
-        </form>
+        <div>
+            <input type="email" id="login-email" placeholder="Enter your email">
+            <input type="password" id="login-password" placeholder="Enter your password">
+            <button onclick="logIn()">Login</button>
+        </div>
+        <div>
+            <input type="email" id="register-email" placeholder="Enter your email">
+            <input type="password" id="register-password" placeholder="Enter your password">
+            <button onclick="register()">Register</button>
+        </div>
     </div>
 </body>
 </html>
