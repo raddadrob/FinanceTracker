@@ -65,6 +65,10 @@
         .hidden {
             display: none;
         }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -91,6 +95,7 @@
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error logging in:', error.message);
+                document.getElementById('login-error').innerText = 'Error logging in: ' + error.message;
             }
         }
 
@@ -111,6 +116,13 @@
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error('Error registering:', error.message);
+                if (error.code === 'auth/email-already-in-use') {
+                    document.getElementById('register-error').innerHTML = `
+                        Account already exists. <button onclick="showLogin()">Log In</button>
+                    `;
+                } else {
+                    document.getElementById('register-error').innerText = 'Error registering: ' + error.message;
+                }
             }
         }
 
@@ -123,6 +135,7 @@
                 window.location.reload(); // Refresh the page after sending the reset email
             } catch (error) {
                 console.error('Error resetting password:', error.message);
+                document.getElementById('reset-error').innerText = 'Error resetting password: ' + error.message;
             }
         }
 
@@ -134,6 +147,7 @@
         function showLogin() {
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('reset-form').classList.add('hidden');
         }
 
         function showResetPassword() {
@@ -149,6 +163,7 @@
             <input type="email" id="login-email" placeholder="Enter your email" required>
             <input type="password" id="login-password" placeholder="Enter your password" required>
             <button type="submit">Login</button>
+            <p id="login-error" class="error"></p>
             <a href="#" class="link" onclick="showRegister()">Register</a>
             <a href="#" class="link" onclick="showResetPassword()">Forgot Password</a>
         </form>
@@ -157,11 +172,13 @@
             <input type="password" id="register-password" placeholder="Enter your password" required>
             <input type="text" id="validation-key" placeholder="Enter validation key" required>
             <button type="submit">Register</button>
+            <p id="register-error" class="error"></p>
             <a href="#" class="link" onclick="showLogin()">Back to Login</a>
         </form>
         <form id="reset-form" class="hidden" onsubmit="resetPassword(event)">
             <input type="email" id="reset-email" placeholder="Enter your email" required>
             <button type="submit">Reset Password</button>
+            <p id="reset-error" class="error"></p>
             <a href="#" class="link" onclick="showLogin()">Back to Login</a>
         </form>
     </div>
