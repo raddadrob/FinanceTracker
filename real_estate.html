@@ -82,9 +82,11 @@
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script>
+    <script type="module">
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
         const firebaseConfig = {
-            apiKey: "AIzaSyAwfLKFTpm75Tz34Zdbxz6A7p9uCqZi4K4",
+            apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -133,7 +135,7 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     const script = document.createElement('script');
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=NEW_API_KEY_HERE&callback=loadMaps`;
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&callback=loadMaps`;
                     script.async = true;
                     script.defer = true;
                     document.head.appendChild(script);
@@ -175,6 +177,7 @@
     </div>
 </body>
 </html>
+
 
 
 
