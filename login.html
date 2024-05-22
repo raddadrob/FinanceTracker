@@ -46,6 +46,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
         button:hover {
             background: #0c0;
@@ -67,7 +68,8 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        function login() {
+        function login(event) {
+            event.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password)
@@ -79,7 +81,8 @@
                 });
         }
 
-        function register() {
+        function register(event) {
+            event.preventDefault();
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             auth.createUserWithEmailAndPassword(email, password)
@@ -101,12 +104,12 @@
 <body>
     <div class="container">
         <h1>Cockrum Finances</h1>
-        <form onsubmit="event.preventDefault(); login();">
+        <form onsubmit="login(event)">
             <input type="email" id="login-email" placeholder="Enter your email" required>
             <input type="password" id="login-password" placeholder="Enter your password" required>
             <button type="submit">Login</button>
         </form>
-        <form onsubmit="event.preventDefault(); register();">
+        <form onsubmit="register(event)">
             <input type="email" id="register-email" placeholder="Enter your email" required>
             <input type="password" id="register-password" placeholder="Enter your password" required>
             <button type="submit">Register</button>
@@ -114,4 +117,3 @@
     </div>
 </body>
 </html>
-
