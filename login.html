@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Cockrum Finances</title>
+    <title>Login - Fitneez</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #000;
             color: #fff;
             margin: 0;
-            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,54 +20,43 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
             width: 100%;
+            max-width: 400px;
             text-align: center;
         }
-        h1 {
-            color: #0f0;
+        img {
+            width: 100%;
+            max-width: 200px;
             margin-bottom: 20px;
         }
-        input[type="email"],
-        input[type="password"],
-        input[type="text"] {
-            width: calc(100% - 20px); /* Ensure full width minus padding */
+        input {
+            width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #555;
             border-radius: 4px;
+            border: 1px solid #555;
             background: #222;
             color: #fff;
-            box-sizing: border-box; /* Ensure padding is included in width calculation */
         }
         button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: none;
             background: #0f0;
             color: #000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
-            width: calc(100% - 20px); /* Ensure full width minus padding */
         }
         button:hover {
             background: #0c0;
         }
         .link {
             color: #0f0;
-            text-decoration: none;
-            display: block;
-            margin-top: 10px;
+            cursor: pointer;
         }
         .link:hover {
             text-decoration: underline;
-        }
-        .hidden {
-            display: none;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -87,101 +75,97 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        async function logIn(event) {
-            event.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error logging in:', error.message);
-                document.getElementById('login-error').innerText = 'Error logging in: ' + error.message;
-            }
-        }
-
-        async function register(event) {
-            event.preventDefault();
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const validationKey = document.getElementById('validation-key').value;
-            const expectedValidationKey = "YOUR_VALIDATION_KEY"; // Replace with your actual validation key
-
-            if (validationKey !== expectedValidationKey) {
-                alert('Invalid validation key');
-                return;
-            }
-
-            try {
-                await auth.createUserWithEmailAndPassword(email, password);
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error registering:', error.message);
-                if (error.code === 'auth/email-already-in-use') {
-                    document.getElementById('register-error').innerHTML = `
-                        Account already exists. <button onclick="showLogin()">Log In</button>
-                    `;
-                } else {
-                    document.getElementById('register-error').innerText = 'Error registering: ' + error.message;
-                }
-            }
-        }
-
-        async function resetPassword(event) {
-            event.preventDefault();
-            const email = document.getElementById('reset-email').value;
-            try {
-                await auth.sendPasswordResetEmail(email);
-                alert('Password reset email sent');
-                window.location.reload(); // Refresh the page after sending the reset email
-            } catch (error) {
-                console.error('Error resetting password:', error.message);
-                document.getElementById('reset-error').innerText = 'Error resetting password: ' + error.message;
-            }
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
         }
 
         function showRegister() {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
         }
 
-        function showLogin() {
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('reset-form').classList.add('hidden');
+        function logOff() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
         }
 
-        function showResetPassword() {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('reset-form').classList.remove('hidden');
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    showLogin();
+                }
+            });
+        });
+
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    window.location.href = 'index.html';
+                })
+                .catch((error) => {
+                    console.error('Error logging in:', error);
+                });
+        }
+
+        function register() {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const validationKey = document.getElementById('validation-key').value;
+            if (validationKey !== 'your_validation_key') {
+                alert('Invalid validation key.');
+                return;
+            }
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert('Registration successful. Please log in.');
+                    showLogin();
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/email-already-in-use') {
+                        alert('This email is already registered. Redirecting to login page.');
+                        showLogin();
+                    } else {
+                        console.error('Error registering:', error);
+                    }
+                });
+        }
+
+        function forgotPassword() {
+            const email = document.getElementById('login-email').value;
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    alert('Password reset email sent.');
+                    showLogin();
+                })
+                .catch((error) => {
+                    console.error('Error sending password reset email:', error);
+                });
         }
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Cockrum Finances</h1>
-        <form id="login-form" onsubmit="logIn(event)">
-            <input type="email" id="login-email" placeholder="Enter your email" required>
-            <input type="password" id="login-password" placeholder="Enter your password" required>
-            <button type="submit">Login</button>
-            <p id="login-error" class="error"></p>
-            <a href="#" class="link" onclick="showRegister()">Register</a>
-            <a href="#" class="link" onclick="showResetPassword()">Forgot Password</a>
-        </form>
-        <form id="register-form" class="hidden" onsubmit="register(event)">
-            <input type="email" id="register-email" placeholder="Enter your email" required>
-            <input type="password" id="register-password" placeholder="Enter your password" required>
-            <input type="text" id="validation-key" placeholder="Enter validation key" required>
-            <button type="submit">Register</button>
-            <p id="register-error" class="error"></p>
-            <a href="#" class="link" onclick="showLogin()">Back to Login</a>
-        </form>
-        <form id="reset-form" class="hidden" onsubmit="resetPassword(event)">
-            <input type="email" id="reset-email" placeholder="Enter your email" required>
-            <button type="submit">Reset Password</button>
-            <p id="reset-error" class="error"></p>
-            <a href="#" class="link" onclick="showLogin()">Back to Login</a>
-        </form>
+    <div id="finance-tracker" class="container">
+        <img src="images/fitneez_logo.png" alt="Fitneez Logo">
+        <div id="login-form">
+            <input type="email" id="login-email" placeholder="Enter your email">
+            <input type="password" id="login-password" placeholder="Enter your password">
+            <button onclick="login()">Login</button>
+            <div class="link" onclick="showRegister()">Register</div>
+            <div class="link" onclick="forgotPassword()">Forgot Password</div>
+        </div>
+        <div id="register-form" style="display:none;">
+            <input type="email" id="register-email" placeholder="Enter your email">
+            <input type="password" id="register-password" placeholder="Enter your password">
+            <input type="text" id="validation-key" placeholder="Enter validation key">
+            <button onclick="register()">Register</button>
+            <div class="link" onclick="showLogin()">Back to Login</div>
+        </div>
     </div>
 </body>
 </html>
