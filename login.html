@@ -30,7 +30,8 @@
             margin-bottom: 20px;
         }
         input[type="email"],
-        input[type="password"] {
+        input[type="password"],
+        input[type="text"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -97,6 +98,14 @@
             event.preventDefault();
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
+            const validationKey = document.getElementById('validation-key').value;
+            const expectedValidationKey = "YOUR_VALIDATION_KEY"; // Replace with your actual validation key
+
+            if (validationKey !== expectedValidationKey) {
+                alert('Invalid validation key');
+                return;
+            }
+
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
                 window.location.href = 'index.html';
@@ -118,11 +127,18 @@
         }
 
         function showRegister() {
-            document.getElementById('register-form').classList.toggle('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
         }
 
         function showResetPassword() {
-            document.getElementById('reset-form').classList.toggle('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('reset-form').classList.remove('hidden');
         }
     </script>
 </head>
@@ -133,17 +149,20 @@
             <input type="email" id="login-email" placeholder="Enter your email" required>
             <input type="password" id="login-password" placeholder="Enter your password" required>
             <button type="submit">Login</button>
+            <a href="#" class="link" onclick="showRegister()">Register</a>
+            <a href="#" class="link" onclick="showResetPassword()">Forgot Password</a>
         </form>
-        <a href="#" class="link" onclick="showRegister()">Register</a>
         <form id="register-form" class="hidden" onsubmit="register(event)">
             <input type="email" id="register-email" placeholder="Enter your email" required>
             <input type="password" id="register-password" placeholder="Enter your password" required>
+            <input type="text" id="validation-key" placeholder="Enter validation key" required>
             <button type="submit">Register</button>
+            <a href="#" class="link" onclick="showLogin()">Back to Login</a>
         </form>
-        <a href="#" class="link" onclick="showResetPassword()">Forgot Password</a>
         <form id="reset-form" class="hidden" onsubmit="resetPassword(event)">
             <input type="email" id="reset-email" placeholder="Enter your email" required>
             <button type="submit">Reset Password</button>
+            <a href="#" class="link" onclick="showLogin()">Back to Login</a>
         </form>
     </div>
 </body>
