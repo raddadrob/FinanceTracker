@@ -188,6 +188,8 @@
             const credits = Array(daysInMonth).fill(0);
             const debits = Array(daysInMonth).fill(0);
             const cashBalances = Array(daysInMonth).fill(0);
+            const creditDescriptions = Array(daysInMonth).fill('');
+            const debitDescriptions = Array(daysInMonth).fill('');
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
@@ -196,6 +198,8 @@
                     credits[day - 1] = data.credit;
                     debits[day - 1] = data.debit;
                     cashBalances[day - 1] = data.cash;
+                    creditDescriptions[day - 1] = data.creditDescription || '';
+                    debitDescriptions[day - 1] = data.debitDescription || '';
                 }
             }
 
@@ -255,7 +259,17 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#0f0'
+                                color: '#0f0' // Green legend labels
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const index = tooltipItem.dataIndex;
+                                    const description = tooltipItem.dataset.label === 'Credits' ? creditDescriptions[index] : debitDescriptions[index];
+                                    const value = tooltipItem.raw;
+                                    return `${description}: $${formatNumber(value)}`;
+                                }
                             }
                         }
                     }
@@ -352,6 +366,7 @@
     </div>
 </body>
 </html>
+
 
 
 
