@@ -105,37 +105,39 @@
         }
 
         function loadMaps() {
-            const houses = [
-                { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
-                { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
-            ];
+            if (typeof google !== 'undefined') {
+                const houses = [
+                    { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
+                    { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
+                ];
 
-            houses.forEach((house, index) => {
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ address: house.address }, (results, status) => {
-                    if (status === 'OK') {
-                        const map = new google.maps.Map(document.getElementById(`map-${index}`), {
-                            zoom: 15,
-                            center: results[0].geometry.location
-                        });
-                        new google.maps.Marker({
-                            position: results[0].geometry.location,
-                            map: map
-                        });
-                    } else {
-                        console.error(`Geocode was not successful for the following reason: ${status}`);
-                    }
+                houses.forEach((house, index) => {
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ address: house.address }, (results, status) => {
+                        if (status === 'OK') {
+                            const map = new google.maps.Map(document.getElementById(`map-${index}`), {
+                                zoom: 15,
+                                center: results[0].geometry.location
+                            });
+                            new google.maps.Marker({
+                                position: results[0].geometry.location,
+                                map: map
+                            });
+                        } else {
+                            console.error(`Geocode was not successful for the following reason: ${status}`);
+                        }
+                    });
                 });
-            });
+            } else {
+                console.error('Google Maps API not loaded correctly');
+            }
         }
 
         function initialize() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    console.log('User is authenticated');
                     loadMaps();
                 } else {
-                    console.log('User is not authenticated, redirecting to login page');
                     window.location.href = 'login.html';
                 }
             });
