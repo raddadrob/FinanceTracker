@@ -70,12 +70,18 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        .map {
+            width: 100%;
+            height: 300px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY_HERE",
+            apiKey: "YOUR_NEW_API_KEY", // Replace this with your actual API key
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -101,7 +107,26 @@
                     window.location.href = 'login.html';
                 }
             });
+
+            loadHouses();
         });
+
+        function loadHouses() {
+            const houses = [
+                { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
+                { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
+            ];
+
+            houses.forEach((house, index) => {
+                const houseElement = document.createElement('div');
+                houseElement.classList.add('section', 'house');
+                houseElement.innerHTML = `
+                    <h2 style="color: #0f0;">${house.name}</h2>
+                    <p>Address: ${house.address}</p>
+                `;
+                document.getElementById('content').appendChild(houseElement);
+            });
+        }
     </script>
 </head>
 <body>
@@ -119,14 +144,7 @@
             </div>
         </div>
         <div id="content" style="flex: 1;">
-            <div class="section house">
-                <h2 style="color: #0f0;">Glass House</h2>
-                <p>Address: 3327 W. Glass Ave., Spokane, WA 99205</p>
-            </div>
-            <div class="section house">
-                <h2 style="color: #0f0;">Winston House</h2>
-                <p>Address: 6510 N. Winston Dr., Spokane, WA 99208</p>
-            </div>
+            <!-- House details will be loaded here dynamically -->
         </div>
     </div>
 </body>
