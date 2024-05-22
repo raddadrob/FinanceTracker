@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summary - Cockrum Finances</title>
+    <title>Fitneez - Finance Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,36 +83,36 @@
         }
         #total-liabilities {
             color: red;
-            text-decoration: underline double;
+            text-decoration: underline double.
         }
         .chart-container {
-            margin-top: 20px;
+            margin-top: 20px.
         }
         .chart-container canvas {
-            background: #333;
-            border-radius: 8px;
+            background: #333.
+            border-radius: 8px.
         }
         .dropdown {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+            display: flex.
+            align-items: center.
+            margin-bottom: 20px.
         }
         .dropdown label {
-            margin-right: 10px;
-            color: #0f0;
+            margin-right: 10px.
+            color: #0f0.
         }
         .dropdown select {
-            padding: 10px;
-            background: #444;
-            color: #0f0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
+            padding: 10px.
+            background: #444.
+            color: #0f0.
+            border: none.
+            border-radius: 4px.
+            cursor: pointer.
+            margin-right: 10px.
         }
         .dropdown select:focus {
-            outline: none;
-            box-shadow: 0 0 5px #0f0;
+            outline: none.
+            box-shadow: 0 0 5px #0f0.
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -121,7 +121,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+            apiKey: "YOUR_FIREBASE_API_KEY",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -188,8 +188,6 @@
             const credits = Array(daysInMonth).fill(0);
             const debits = Array(daysInMonth).fill(0);
             const cashBalances = Array(daysInMonth).fill(0);
-            const creditDescriptions = Array(daysInMonth).fill('');
-            const debitDescriptions = Array(daysInMonth).fill('');
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
@@ -198,8 +196,6 @@
                     credits[day - 1] = data.credit;
                     debits[day - 1] = data.debit;
                     cashBalances[day - 1] = data.cash;
-                    creditDescriptions[day - 1] = data.creditDescription || '';
-                    debitDescriptions[day - 1] = data.debitDescription || '';
                 }
             }
 
@@ -242,18 +238,15 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#0f0', // Green x-axis labels
+                                color: '#0f0'
                             }
                         },
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: '#0f0' // Green horizontal lines
-                            },
                             ticks: {
-                                color: '#0f0', // Green y-axis labels
+                                color: '#0f0',
                                 callback: function(value) {
-                                    return '$' + formatNumber(value);
+                                    return '$' + value.toLocaleString();
                                 }
                             }
                         }
@@ -261,16 +254,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#0f0' // Green legend labels
+                                color: '#0f0'
                             }
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(tooltipItem) {
-                                    const index = tooltipItem.dataIndex;
-                                    const description = tooltipItem.dataset.label === 'Credits' ? creditDescriptions[index] : debitDescriptions[index];
-                                    const value = tooltipItem.raw;
-                                    return `${description}: $${formatNumber(value)}`;
+                                label: function(context) {
+                                    const datasetIndex = context.datasetIndex;
+                                    const dataIndex = context.dataIndex;
+                                    const description = datasetIndex === 0 ? `Credit: ${credits[dataIndex]}` : `Debit: ${debits[dataIndex]}`;
+                                    return `${description}: $${context.raw}`;
                                 }
                             }
                         }
@@ -293,7 +286,7 @@
 </head>
 <body>
     <div id="finance-tracker" class="container">
-        <h1>Cockrum Finances</h1>
+        <h1><img src="/images/fitneez_logo_green.png" alt="Fitneez Logo" /></h1>
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
@@ -369,6 +362,7 @@
     </div>
 </body>
 </html>
+
 
 
 
