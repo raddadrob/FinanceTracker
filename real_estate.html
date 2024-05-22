@@ -70,18 +70,12 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        .map {
-            width: 100%;
-            height: 300px;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM", // Replace this with your actual API key
+            apiKey: "AIzaSyAwfLKFTpm75Tz34Zdbxz6A7p9uCqZi4K4",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -107,26 +101,7 @@
                     window.location.href = 'login.html';
                 }
             });
-
-            loadHouses();
         });
-
-        function loadHouses() {
-            const houses = [
-                { name: 'Glass House', address: '3327 W. Glass Ave., Spokane, WA 99205' },
-                { name: 'Winston House', address: '6510 N. Winston Dr., Spokane, WA 99208' }
-            ];
-
-            houses.forEach((house, index) => {
-                const houseElement = document.createElement('div');
-                houseElement.classList.add('section', 'house');
-                houseElement.innerHTML = `
-                    <h2 style="color: #0f0;">${house.name}</h2>
-                    <p>Address: ${house.address}</p>
-                `;
-                document.getElementById('content').appendChild(houseElement);
-            });
-        }
     </script>
 </head>
 <body>
@@ -144,13 +119,18 @@
             </div>
         </div>
         <div id="content" style="flex: 1;">
-            <!-- House details will be loaded here dynamically -->
+            <div class="section house">
+                <h2 style="color: #0f0;">Glass House</h2>
+                <p>Address: 3327 W. Glass Ave., Spokane, WA 99205</p>
+            </div>
+            <div class="section house">
+                <h2 style="color: #0f0;">Winston House</h2>
+                <p>Address: 6510 N. Winston Dr., Spokane, WA 99208</p>
+            </div>
         </div>
     </div>
 </body>
 </html>
-
-
 
 
 
