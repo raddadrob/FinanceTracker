@@ -111,6 +111,7 @@
             try {
                 await auth.sendPasswordResetEmail(email);
                 alert('Password reset email sent');
+                window.location.reload(); // Refresh the page after sending the reset email
             } catch (error) {
                 console.error('Error resetting password:', error.message);
             }
