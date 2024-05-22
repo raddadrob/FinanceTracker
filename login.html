@@ -10,6 +10,7 @@
             background-color: #000;
             color: #fff;
             margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,31 +21,48 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
             text-align: center;
         }
         h1 {
             color: #0f0;
             margin-bottom: 20px;
         }
-        input[type="email"], input[type="password"] {
+        input[type="email"],
+        input[type="password"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: none;
+            border: 1px solid #555;
             border-radius: 4px;
+            background: #222;
+            color: #fff;
         }
         button {
-            width: 100%;
-            padding: 10px;
             background: #0f0;
             color: #000;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin: 10px 0;
+            margin-top: 10px;
+            width: 100%;
         }
         button:hover {
             background: #0c0;
+        }
+        .link {
+            color: #0f0;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -63,7 +81,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        async function login(event) {
+        async function logIn(event) {
             event.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -71,7 +89,7 @@
                 await auth.signInWithEmailAndPassword(email, password);
                 window.location.href = 'index.html';
             } catch (error) {
-                console.error('Error logging in:', error);
+                console.error('Error logging in:', error.message);
             }
         }
 
@@ -83,24 +101,50 @@
                 await auth.createUserWithEmailAndPassword(email, password);
                 window.location.href = 'index.html';
             } catch (error) {
-                console.error('Error registering:', error);
+                console.error('Error registering:', error.message);
             }
+        }
+
+        async function resetPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert('Password reset email sent');
+            } catch (error) {
+                console.error('Error resetting password:', error.message);
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('register-form').classList.toggle('hidden');
+        }
+
+        function showResetPassword() {
+            document.getElementById('reset-form').classList.toggle('hidden');
         }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Cockrum Finances</h1>
-        <form id="login-form" onsubmit="login(event)">
+        <form id="login-form" onsubmit="logIn(event)">
             <input type="email" id="login-email" placeholder="Enter your email" required>
             <input type="password" id="login-password" placeholder="Enter your password" required>
             <button type="submit">Login</button>
         </form>
-        <form id="register-form" onsubmit="register(event)">
+        <a href="#" class="link" onclick="showRegister()">Register</a>
+        <form id="register-form" class="hidden" onsubmit="register(event)">
             <input type="email" id="register-email" placeholder="Enter your email" required>
             <input type="password" id="register-password" placeholder="Enter your password" required>
             <button type="submit">Register</button>
         </form>
+        <a href="#" class="link" onclick="showResetPassword()">Forgot Password</a>
+        <form id="reset-form" class="hidden" onsubmit="resetPassword(event)">
+            <input type="email" id="reset-email" placeholder="Enter your email" required>
+            <button type="submit">Reset Password</button>
+        </form>
     </div>
 </body>
 </html>
+
