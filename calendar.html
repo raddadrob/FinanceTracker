@@ -223,7 +223,15 @@
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const cashBalance = previousDayBalance + credit - Math.abs(debit);
                 cashBalances[day] = cashBalance;
-                document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
+                const cashElement = document.getElementById(`cash-${day}`);
+                cashElement.innerText = `$${formatNumber(cashBalance)}`;
+                if (cashBalance > 5000) {
+                    cashElement.style.color = 'green';
+                } else if (cashBalance >= 0 && cashBalance <= 4999) {
+                    cashElement.style.color = 'yellow';
+                } else {
+                    cashElement.style.color = 'red';
+                }
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
                 debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
                 previousDayBalance = cashBalance;
@@ -276,7 +284,7 @@
                     <input type="text" id="credit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
                     <input type="text" id="debit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
-                    <div>Cash: <span id="cash-${day}">$0</span></div>
+                    <div id="cash-${day}" class="cash-value">$0</div>
                 `;
                 calendar.appendChild(dayElement);
 
@@ -287,7 +295,15 @@
                     document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : '';
                     document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
-                    document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
+                    const cashElement = document.getElementById(`cash-${day}`);
+                    cashElement.innerText = `$${formatNumber(data.cash)}`;
+                    if (data.cash > 5000) {
+                        cashElement.style.color = 'green';
+                    } else if (data.cash >= 0 && data.cash <= 4999) {
+                        cashElement.style.color = 'yellow';
+                    } else {
+                        cashElement.style.color = 'red';
+                    }
                 }
             }
 
