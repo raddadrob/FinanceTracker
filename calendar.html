@@ -157,6 +157,9 @@
             border-radius: 4px;
             text-align: center;
         }
+        .cash-value {
+            font-weight: bold;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -225,12 +228,13 @@
                 cashBalances[day] = cashBalance;
                 const cashElement = document.getElementById(`cash-${day}`);
                 cashElement.innerText = `$${formatNumber(cashBalance)}`;
+                cashElement.style.fontWeight = 'bold';
                 if (cashBalance > 5000) {
-                    cashElement.style.color = 'green';
+                    cashElement.style.color = '#0f0'; // Green
                 } else if (cashBalance >= 0 && cashBalance <= 4999) {
-                    cashElement.style.color = 'yellow';
+                    cashElement.style.color = 'yellow'; // Yellow
                 } else {
-                    cashElement.style.color = 'red';
+                    cashElement.style.color = 'red'; // Red
                 }
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
                 debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
@@ -297,12 +301,13 @@
                     document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
                     const cashElement = document.getElementById(`cash-${day}`);
                     cashElement.innerText = `$${formatNumber(data.cash)}`;
+                    cashElement.style.fontWeight = 'bold';
                     if (data.cash > 5000) {
-                        cashElement.style.color = 'green';
+                        cashElement.style.color = '#0f0'; // Green
                     } else if (data.cash >= 0 && data.cash <= 4999) {
-                        cashElement.style.color = 'yellow';
+                        cashElement.style.color = 'yellow'; // Yellow
                     } else {
-                        cashElement.style.color = 'red';
+                        cashElement.style.color = 'red'; // Red
                     }
                 }
             }
