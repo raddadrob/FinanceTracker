@@ -92,6 +92,7 @@
 
         function logOff() {
             auth.signOut().then(() => {
+                sessionStorage.removeItem('userLoggedIn');
                 window.location.href = 'login.html';
             }).catch((error) => {
                 console.error('Error signing out:', error);
@@ -100,12 +101,16 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (!user) {
+                if (!user || !sessionStorage.getItem('userLoggedIn')) {
                     window.location.href = 'login.html';
                 } else {
                     // Add event listener for the beforeunload event
                     window.addEventListener('beforeunload', () => {
-                        auth.signOut();
+                        auth.signOut().then(() => {
+                            sessionStorage.removeItem('userLoggedIn');
+                        }).catch((error) => {
+                            console.error('Error signing out:', error);
+                        });
                     });
                 }
             });
@@ -139,6 +144,7 @@
     </div>
 </body>
 </html>
+
 
 
 
