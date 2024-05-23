@@ -26,7 +26,7 @@
         h1 {
             text-align: left;
             color: #0f0;
-            margin: 0 0 20px 0;
+            margin: 0 0 10px 0;
         }
         .menu-bar {
             display: flex;
@@ -66,10 +66,24 @@
         .section {
             margin-bottom: 20px;
         }
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+        }
         .controls {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 20px;
         }
         .dropdown {
             display: flex;
@@ -93,35 +107,10 @@
             outline: none;
             box-shadow: 0 0 5px #0f0;
         }
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            margin-right: 10px;
-            color: #0f0;
-        }
-        .form-group input {
-            padding: 10px;
-            background: #444;
-            color: #0f0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-group input:focus {
-            outline: none;
-            box-shadow: 0 0 5px #0f0;
-        }
-        .calendar-header {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 10px;
-        }
-        .calendar-header div {
-            text-align: center;
-            font-weight: bold;
+        .green-line {
+            height: 2px;
+            background-color: #0f0;
+            margin: 10px 0;
         }
         .calendar {
             display: grid;
@@ -152,17 +141,21 @@
         .day input.debit {
             color: red;
         }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
+        }
+        .calendar-header div {
+            text-align: center;
+            font-weight: bold;
+        }
         .ending-balance {
             margin-top: 20px;
             padding: 10px;
             background: #444;
             border-radius: 4px;
             text-align: center;
-        }
-        .green-line {
-            height: 2px;
-            background-color: #0f0;
-            margin: 10px 0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -248,6 +241,7 @@
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -275,6 +269,8 @@
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="text" id="credit-description-${day}" class="credit-description" placeholder="Credit Description" onchange="calculateBalances()">
+                    <input type="text" id="debit-description-${day}" class="debit-description" placeholder="Debit Description" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -285,6 +281,8 @@
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
+                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
+                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
                 }
             }
 
@@ -327,7 +325,7 @@
         <div id="content">
             <div class="controls">
                 <div class="dropdown">
-                    <label>Select Month: </label>
+                    <label for="month-select">Select Month: </label>
                     <select id="month-select">
                         <option value="January">January</option>
                         <option value="February">February</option>
@@ -375,6 +373,7 @@
     </div>
 </body>
 </html>
+
 
 
 
