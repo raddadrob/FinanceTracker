@@ -160,6 +160,10 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     loadData();
+                    // Add event listener for the beforeunload event
+                    window.addEventListener('beforeunload', () => {
+                        auth.signOut();
+                    });
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -448,6 +452,7 @@
     </div>
 </body>
 </html>
+
 
 
 
