@@ -200,6 +200,10 @@
                     document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
                     renderMonthSelector();
                     renderCalendar();
+                    // Add event listener for the beforeunload event
+                    window.addEventListener('beforeunload', () => {
+                        auth.signOut();
+                    });
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -401,6 +405,7 @@
     </div>
 </body>
 </html>
+
 
 
 
