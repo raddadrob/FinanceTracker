@@ -26,7 +26,6 @@
         h1 {
             text-align: left;
             color: #0f0;
-            margin: 0;
         }
         .menu-bar {
             display: flex;
@@ -286,23 +285,33 @@
         }
 
         function renderMonthSelector() {
-            const monthSelector = document.querySelector('.month-selector');
-            monthSelector.innerHTML = '';
-            monthNames.forEach((monthName, index) => {
-                const monthDiv = document.createElement('div');
-                monthDiv.innerText = monthName;
-                monthDiv.onclick = () => {
-                    currentMonth = index;
-                    renderCalendar();
-                };
-                monthSelector.appendChild(monthDiv);
-            });
+            const monthSelect = document.getElementById('month-select');
+            monthSelect.innerHTML = monthNames.map((month, index) => `<option value="${index}">${month}</option>`).join('');
+            monthSelect.value = currentMonth;
+
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let i = 2020; i <= currentYear; i++) {
+                years.push(i);
+            }
+            yearSelect.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
+            yearSelect.value = currentYear;
+
+            monthSelect.addEventListener('change', updateCalendar);
+            yearSelect.addEventListener('change', updateCalendar);
+        }
+
+        function updateCalendar() {
+            currentMonth = parseInt(document.getElementById('month-select').value);
+            currentYear = parseInt(document.getElementById('year-select').value);
+            renderCalendar();
         }
 
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
-        
+
         function saveDescription(day, type) {
             const desc = document.getElementById(`${type}-desc-${day}`).value;
             const field = type === 'credit' ? 'creditDesc' : 'debitDesc';
@@ -330,28 +339,9 @@
                 <h1>Fitneez</h1>
                 <div class="dropdown">
                     <label for="month-select">Select Month:</label>
-                    <select id="month-select">
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
+                    <select id="month-select"></select>
                     <label for="year-select">Select Year:</label>
-                    <select id="year-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                    </select>
+                    <select id="year-select"></select>
                 </div>
                 <h2>Cash Flow</h2>
             </div>
