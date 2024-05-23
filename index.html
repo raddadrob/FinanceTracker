@@ -152,6 +152,11 @@
                     loadSummary();
                     document.getElementById('month-select').addEventListener('change', updateChart);
                     document.getElementById('year-select').addEventListener('change', updateChart);
+                    
+                    // Add event listener for the beforeunload event
+                    window.addEventListener('beforeunload', () => {
+                        auth.signOut();
+                    });
                 }
             });
         });
