@@ -61,16 +61,12 @@
             cursor: pointer;
             text-decoration: underline;
         }
-        .logo img {
-            max-width: 100%;
-            height: auto;
-        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyD8VdAh4xgWNMapZp7TdvffU2AqLZ3U9pE",
+            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -145,11 +141,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">
-            <img src="/images/fitneez_logo_green.png" alt="Fitneez Logo">
-        </div>
+        <h1>Fitneez</h1>
         <div id="login-form">
-            <h1>Login</h1>
+            <h2>Login</h2>
             <div class="form-group">
                 <label for="login-email">Email</label>
                 <input type="email" id="login-email" placeholder="Enter your email">
@@ -165,7 +159,7 @@
             <p class="link" onclick="sendPasswordResetEmail()">Forgot Password?</p>
         </div>
         <div id="register-form" style="display: none;">
-            <h1>Register</h1>
+            <h2>Register</h2>
             <div class="form-group">
                 <label for="register-email">Email</label>
                 <input type="email" id="register-email" placeholder="Enter your email">
