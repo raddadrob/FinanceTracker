@@ -65,6 +65,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
+        // Ensure the Firebase config matches your project's settings
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
@@ -90,60 +91,73 @@
             }
         }
 
-        async function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                window.location.href = 'index.html';
-            } catch (error) {
-                alert('Error logging in: ' + error.message);
-            }
-        }
-
-        async function register() {
+        function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            const validationKey = document.getElementById('register-validation-key').value;
+            const validationKey = document.getElementById('validation-key').value;
 
-            if (validationKey !== 'VALIDATION_KEY_PROVIDED') {
-                alert('Invalid validation key');
+            if (validationKey !== 'your-validation-key') {
+                alert('Invalid validation key.');
                 return;
             }
 
-            try {
-                await auth.createUserWithEmailAndPassword(email, password);
-                alert('Registration successful! Please log in.');
-                toggleForm();
-            } catch (error) {
-                if (error.code === 'auth/email-already-in-use') {
-                    alert('You already have an account. Redirecting to login page.');
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    alert('Registration successful. You can now log in.');
                     toggleForm();
-                } else {
-                    alert('Error registering: ' + error.message);
-                }
-            }
+                })
+                .catch(error => {
+                    if (error.code === 'auth/email-already-in-use') {
+                        alert('This email is already registered. Please log in.');
+                        toggleForm();
+                    } else {
+                        console.error('Error registering:', error);
+                        alert('Error registering: ' + error.message);
+                    }
+                });
         }
 
-        async function sendPasswordResetEmail() {
-            const email = prompt('Please enter your email address:');
-            if (email) {
-                try {
-                    await auth.sendPasswordResetEmail(email);
-                    alert('Password reset email sent. Please check your inbox.');
-                    window.location.reload();
-                } catch (error) {
-                    alert('Error sending password reset email: ' + error.message);
-                }
-            }
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'index.html';
+                })
+                .catch(error => {
+                    console.error('Error logging in:', error);
+                    alert('Error logging in: ' + error.message);
+                });
         }
+
+        function forgotPassword() {
+            const email = document.getElementById('login-email').value;
+
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    alert('Password reset email sent.');
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error sending password reset email:', error);
+                    alert('Error sending password reset email: ' + error.message);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'index.html';
+                }
+            });
+        });
     </script>
 </head>
 <body>
     <div class="container">
         <h1>Fitneez</h1>
         <div id="login-form">
-            <h2>Login</h2>
             <div class="form-group">
                 <label for="login-email">Email</label>
                 <input type="email" id="login-email" placeholder="Enter your email">
@@ -153,13 +167,12 @@
                 <input type="password" id="login-password" placeholder="Enter your password">
             </div>
             <div class="form-group">
-                <button onclick="login()">Login</button>
+                <button onclick="login()">Log In</button>
             </div>
-            <p class="link" onclick="toggleForm()">Don't have an account? Register</p>
-            <p class="link" onclick="sendPasswordResetEmail()">Forgot Password?</p>
+            <p class="link" onclick="forgotPassword()">Forgot Password?</p>
+            <p class="link" onclick="toggleForm()">Register</p>
         </div>
         <div id="register-form" style="display: none;">
-            <h2>Register</h2>
             <div class="form-group">
                 <label for="register-email">Email</label>
                 <input type="email" id="register-email" placeholder="Enter your email">
@@ -169,13 +182,13 @@
                 <input type="password" id="register-password" placeholder="Enter your password">
             </div>
             <div class="form-group">
-                <label for="register-validation-key">Validation Key</label>
-                <input type="text" id="register-validation-key" placeholder="Enter validation key">
+                <label for="validation-key">Validation Key</label>
+                <input type="text" id="validation-key" placeholder="Enter validation key">
             </div>
             <div class="form-group">
                 <button onclick="register()">Register</button>
             </div>
-            <p class="link" onclick="toggleForm()">Already have an account? Login</p>
+            <p class="link" onclick="toggleForm()">Log In</p>
         </div>
     </div>
 </body>
