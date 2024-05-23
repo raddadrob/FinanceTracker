@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitneez - Finance Tracker</title>
+    <title>Summary - Fitneez</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,36 +83,36 @@
         }
         #total-liabilities {
             color: red;
-            text-decoration: underline double.
+            text-decoration: underline double;
         }
         .chart-container {
-            margin-top: 20px.
+            margin-top: 20px;
         }
         .chart-container canvas {
-            background: #333.
-            border-radius: 8px.
+            background: #333;
+            border-radius: 8px;
         }
         .dropdown {
-            display: flex.
-            align-items: center.
-            margin-bottom: 20px.
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
         }
         .dropdown label {
-            margin-right: 10px.
-            color: #0f0.
+            margin-right: 10px;
+            color: #0f0;
         }
         .dropdown select {
-            padding: 10px.
-            background: #444.
-            color: #0f0.
-            border: none.
-            border-radius: 4px.
-            cursor: pointer.
-            margin-right: 10px.
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
         }
         .dropdown select:focus {
-            outline: none.
-            box-shadow: 0 0 5px #0f0.
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -121,7 +121,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
+            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -145,12 +145,12 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (user) {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
                     loadSummary();
                     document.getElementById('month-select').addEventListener('change', updateChart);
                     document.getElementById('year-select').addEventListener('change', updateChart);
-                } else {
-                    window.location.href = 'login.html';
                 }
             });
         });
@@ -238,16 +238,19 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#0f0'
+                                color: '#0f0' // Change x-axis labels color to green
                             }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: '#0f0',
+                                color: '#0f0', // Change y-axis labels color to green
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 0, 0.2)' // Change y-axis grid lines color to green
                             }
                         }
                     },
@@ -260,10 +263,16 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const datasetIndex = context.datasetIndex;
                                     const dataIndex = context.dataIndex;
-                                    const description = datasetIndex === 0 ? `Credit: ${credits[dataIndex]}` : `Debit: ${debits[dataIndex]}`;
-                                    return `${description}: $${context.raw}`;
+                                    const datasetIndex = context.datasetIndex;
+                                    const value = context.raw;
+                                    if (datasetIndex === 0) { // Credits
+                                        return `Credit: $${value.toLocaleString()} - ${credits[dataIndex].description}`;
+                                    } else if (datasetIndex === 1) { // Debits
+                                        return `Debit: $${value.toLocaleString()} - ${debits[dataIndex].description}`;
+                                    } else { // Cash Balance
+                                        return `Cash Balance: $${value.toLocaleString()}`;
+                                    }
                                 }
                             }
                         }
@@ -286,7 +295,7 @@
 </head>
 <body>
     <div id="finance-tracker" class="container">
-        <h1><img src="/images/fitneez_logo_green.png" alt="Fitneez Logo" /></h1>
+        <h1>Fitneez</h1>
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
@@ -362,6 +371,7 @@
     </div>
 </body>
 </html>
+
 
 
 
