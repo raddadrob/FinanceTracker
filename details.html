@@ -128,11 +128,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="session.js"></script>
+    <script src="session.js"></script> <!-- Include session.js -->
     <script>
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
         let stocksAndBonds = [];
         let realEstate = [];
         let miscAssets = [];
@@ -154,15 +151,6 @@
                 } else {
                     loadData();
                 }
-            });
-
-            // Add event listener for the beforeunload event
-            window.addEventListener('beforeunload', () => {
-                auth.signOut().then(() => {
-                    sessionStorage.removeItem('userLoggedIn');
-                }).catch((error) => {
-                    console.error('Error signing out:', error);
-                });
             });
         });
 
@@ -320,7 +308,7 @@
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
-               <a href="real_estate.html">Real Estate</a> 
+                <a href="real_estate.html">Real Estate</a>
             </div>
             <div class="menu-buttons">
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
@@ -448,6 +436,7 @@
     </div>
 </body>
 </html>
+
 
 
 
