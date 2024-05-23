@@ -188,6 +188,8 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const credits = Array(daysInMonth).fill(0);
             const debits = Array(daysInMonth).fill(0);
+            const creditDescriptions = Array(daysInMonth).fill("");
+            const debitDescriptions = Array(daysInMonth).fill("");
             const cashBalances = Array(daysInMonth).fill(0);
 
             for (let day = 1; day <= daysInMonth; day++) {
@@ -197,6 +199,8 @@
                     credits[day - 1] = data.credit;
                     debits[day - 1] = data.debit;
                     cashBalances[day - 1] = data.cash;
+                    creditDescriptions[day - 1] = data.creditDescription || "";
+                    debitDescriptions[day - 1] = data.debitDescription || "";
                 }
             }
 
@@ -268,9 +272,9 @@
                                     const datasetIndex = context.datasetIndex;
                                     const value = context.raw;
                                     if (datasetIndex === 0) { // Credits
-                                        return `Credit: $${value.toLocaleString()} - ${credits[dataIndex].description}`;
+                                        return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
                                     } else if (datasetIndex === 1) { // Debits
-                                        return `Debit: $${value.toLocaleString()} - ${debits[dataIndex].description}`;
+                                        return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
                                     } else { // Cash Balance
                                         return `Cash Balance: $${value.toLocaleString()}`;
                                     }
@@ -372,6 +376,7 @@
     </div>
 </body>
 </html>
+
 
 
 
