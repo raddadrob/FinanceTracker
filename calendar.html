@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitneez - Cash Flow</title>
+    <title>Fitneez</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -26,6 +26,7 @@
         h1 {
             text-align: left;
             color: #0f0;
+            margin: 0 0 20px 0;
         }
         .menu-bar {
             display: flex;
@@ -51,7 +52,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button, .theme-button {
+        .logoff-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -59,31 +60,21 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover, .theme-button:hover {
+        .logoff-button:hover {
             background: #0c0;
         }
-        .form-group {
-            display: flex;
-            gap: 10px;
+        .section {
             margin-bottom: 20px;
-            justify-content: center;
-        }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
-            color: #fff;
         }
         .controls {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
         }
         .dropdown {
             display: flex;
             align-items: center;
+            margin-bottom: 20px;
         }
         .dropdown label {
             margin-right: 10px;
@@ -102,10 +93,35 @@
             outline: none;
             box-shadow: 0 0 5px #0f0;
         }
-        .green-line {
-            height: 2px;
-            background-color: #0f0;
-            margin: 10px 0;
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            margin-right: 10px;
+            color: #0f0;
+        }
+        .form-group input {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
+        }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
+        }
+        .calendar-header div {
+            text-align: center;
+            font-weight: bold;
         }
         .calendar {
             display: grid;
@@ -136,21 +152,17 @@
         .day input.debit {
             color: red;
         }
-        .calendar-header {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 10px;
-        }
-        .calendar-header div {
-            text-align: center;
-            font-weight: bold;
-        }
         .ending-balance {
             margin-top: 20px;
             padding: 10px;
             background: #444;
             border-radius: 4px;
             text-align: center;
+        }
+        .green-line {
+            height: 2px;
+            background-color: #0f0;
+            margin: 10px 0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -236,7 +248,6 @@
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -264,8 +275,6 @@
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
-                    <input type="text" id="credit-desc-${day}" class="credit-desc" placeholder="Description" style="color: green;" onchange="saveDescription(${day}, 'credit')">
-                    <input type="text" id="debit-desc-${day}" class="debit-desc" placeholder="Description" style="color: red;" onchange="saveDescription(${day}, 'debit')">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -276,8 +285,6 @@
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
-                    document.getElementById(`credit-desc-${day}`).value = data.creditDesc || '';
-                    document.getElementById(`debit-desc-${day}`).value = data.debitDesc || '';
                 }
             }
 
@@ -285,44 +292,27 @@
         }
 
         function renderMonthSelector() {
-            const monthSelect = document.getElementById('month-select');
-            monthSelect.innerHTML = monthNames.map((month, index) => `<option value="${index}">${month}</option>`).join('');
-            monthSelect.value = currentMonth;
-
-            const yearSelect = document.getElementById('year-select');
-            const currentYear = new Date().getFullYear();
-            const years = [];
-            for (let i = 2020; i <= currentYear; i++) {
-                years.push(i);
-            }
-            yearSelect.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
-            yearSelect.value = currentYear;
-
-            monthSelect.addEventListener('change', updateCalendar);
-            yearSelect.addEventListener('change', updateCalendar);
-        }
-
-        function updateCalendar() {
-            currentMonth = parseInt(document.getElementById('month-select').value);
-            currentYear = parseInt(document.getElementById('year-select').value);
-            renderCalendar();
+            const monthSelector = document.querySelector('.month-selector');
+            monthSelector.innerHTML = '';
+            monthNames.forEach((monthName, index) => {
+                const monthDiv = document.createElement('div');
+                monthDiv.innerText = monthName;
+                monthDiv.onclick = () => {
+                    currentMonth = index;
+                    renderCalendar();
+                };
+                monthSelector.appendChild(monthDiv);
+            });
         }
 
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
-
-        function saveDescription(day, type) {
-            const desc = document.getElementById(`${type}-desc-${day}`).value;
-            const field = type === 'credit' ? 'creditDesc' : 'debitDesc';
-            db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).update({
-                [field]: desc
-            });
-        }
     </script>
 </head>
 <body>
     <div id="finance-tracker" class="container">
+        <h1>Fitneez</h1>
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
@@ -336,12 +326,29 @@
         </div>
         <div id="content">
             <div class="controls">
-                <h1>Fitneez</h1>
                 <div class="dropdown">
-                    <label for="month-select">Select Month:</label>
-                    <select id="month-select"></select>
-                    <label for="year-select">Select Year:</label>
-                    <select id="year-select"></select>
+                    <label>Select Month: </label>
+                    <select id="month-select">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
                 </div>
                 <h2>Cash Flow</h2>
             </div>
@@ -368,6 +375,7 @@
     </div>
 </body>
 </html>
+
 
 
 
