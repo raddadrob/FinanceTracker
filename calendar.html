@@ -26,7 +26,6 @@
         h1 {
             text-align: left;
             color: #0f0;
-            margin: 0 0 10px 0;
         }
         .menu-bar {
             display: flex;
@@ -52,7 +51,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button {
+        .logoff-button, .theme-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -60,35 +59,17 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover {
+        .logoff-button:hover, .theme-button:hover {
             background: #0c0;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
-        .form-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
-            color: #fff;
         }
         .controls {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
+            align-items: center;
         }
         .dropdown {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
         }
         .dropdown label {
             margin-right: 10px;
@@ -111,6 +92,22 @@
             height: 2px;
             background-color: #0f0;
             margin: 10px 0;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            margin-right: 10px;
+            color: #0f0;
+        }
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
         }
         .calendar {
             display: grid;
@@ -140,6 +137,9 @@
         }
         .day input.debit {
             color: red;
+        }
+        .day input.description {
+            color: #fff;
         }
         .calendar-header {
             display: grid;
@@ -195,6 +195,7 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
+                    renderMonthSelector();
                     renderCalendar();
                 } else {
                     window.location.href = 'login.html';
@@ -216,19 +217,23 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const creditInput = document.getElementById(`credit-${day}`);
                 const debitInput = document.getElementById(`debit-${day}`);
+                const creditDescription = document.getElementById(`credit-description-${day}`);
+                const debitDescription = document.getElementById(`debit-description-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
-                const cashBalance = previousDayBalance + credit - Math.abs(debit); // Subtract debit as a positive value
+                const cashBalance = previousDayBalance + credit - Math.abs(debit);
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                               debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
+                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
                 previousDayBalance = cashBalance;
 
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
                     credit: credit,
                     debit: debit,
-                    cash: cashBalance
+                    cash: cashBalance,
+                    creditDescription: creditDescription.value,
+                    debitDescription: debitDescription.value
                 });
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
@@ -240,7 +245,6 @@
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -267,7 +271,9 @@
                 dayElement.innerHTML = `
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
+                    <input type="text" id="credit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="text" id="debit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -276,12 +282,48 @@
                 if (dayDoc.exists) {
                     const data = dayDoc.data();
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
-                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
+                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
+                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : '';
+                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
                 }
             }
 
             calculateBalances();
+        }
+
+        function renderMonthSelector() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            monthSelect.innerHTML = '';
+            yearSelect.innerHTML = '';
+
+            monthNames.forEach((monthName, index) => {
+                const monthOption = document.createElement('option');
+                monthOption.value = monthName;
+                monthOption.innerText = monthName;
+                monthSelect.appendChild(monthOption);
+            });
+
+            for (let year = 2020; year <= 2030; year++) {
+                const yearOption = document.createElement('option');
+                yearOption.value = year;
+                yearOption.innerText = year;
+                yearSelect.appendChild(yearOption);
+            }
+
+            monthSelect.value = monthNames[currentMonth];
+            yearSelect.value = currentYear;
+
+            monthSelect.addEventListener('change', () => {
+                currentMonth = monthNames.indexOf(monthSelect.value);
+                renderCalendar();
+            });
+
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value, 10);
+                renderCalendar();
+            });
         }
 
         function formatNumber(value) {
@@ -303,31 +345,12 @@
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
-        <div id="content">
+        <div id="content" style="flex: 1;">
             <div class="controls">
                 <div class="dropdown">
-                    <label for="month-select">Select Month: </label>
-                    <select id="month-select">
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                    <select id="year-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                    </select>
+                    <label>Select Month:</label>
+                    <select id="month-select"></select>
+                    <select id="year-select"></select>
                 </div>
                 <h2>Cash Flow</h2>
             </div>
