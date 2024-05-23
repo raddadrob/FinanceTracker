@@ -120,18 +120,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="session.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
-            authDomain: "cockrumfinance.firebaseapp.com",
-            projectId: "cockrumfinance",
-            storageBucket: "cockrumfinance.appspot.com",
-            messagingSenderId: "446623626941",
-            appId: "1:446623626941:web:3dc1d2e435caf61d04e9d4",
-            measurementId: "G-JFRC4K0BBF"
-        };
-
-        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         let chart;
@@ -144,27 +134,6 @@
                 console.error('Error signing out:', error);
             });
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (!user || !sessionStorage.getItem('userLoggedIn')) {
-                    window.location.href = 'login.html';
-                } else {
-                    loadSummary();
-                    document.getElementById('month-select').addEventListener('change', updateChart);
-                    document.getElementById('year-select').addEventListener('change', updateChart);
-                }
-            });
-
-            // Add event listener for the beforeunload event
-            window.addEventListener('beforeunload', () => {
-                auth.signOut().then(() => {
-                    sessionStorage.removeItem('userLoggedIn');
-                }).catch((error) => {
-                    console.error('Error signing out:', error);
-                });
-            });
-        });
 
         async function loadSummary() {
             const stocksAndBonds = await getTotal('stocks_and_bonds');
@@ -306,6 +275,27 @@
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (!user || !sessionStorage.getItem('userLoggedIn')) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
+                }
+            });
+
+            // Add event listener for the beforeunload event
+            window.addEventListener('beforeunload', () => {
+                auth.signOut().then(() => {
+                    sessionStorage.removeItem('userLoggedIn');
+                }).catch((error) => {
+                    console.error('Error signing out:', error);
+                });
+            });
+        });
     </script>
 </head>
 <body>
@@ -386,8 +376,6 @@
     </div>
 </body>
 </html>
-
-
 
 
 
