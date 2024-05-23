@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash Flow - Cockrum Finances</title>
+    <title>Fitneez - Cash Flow</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -24,8 +24,9 @@
             flex-direction: column;
         }
         h1 {
-            text-align: center;
+            text-align: left;
             color: #0f0;
+            margin: 0;
         }
         .menu-bar {
             display: flex;
@@ -75,24 +76,32 @@
             background: #222;
             color: #fff;
         }
-        .month-selector {
+        .controls {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            flex-wrap: nowrap; /* Ensure buttons stay in a single row */
-            overflow-x: auto; /* Allow scrolling if necessary */
         }
-        .month-selector div {
-            padding: 5px 10px; /* Adjust padding for smaller buttons */
-            background: #444;
-            border-radius: 4px;
-            margin: 5px;
-            cursor: pointer;
+        .dropdown {
+            display: flex;
+            align-items: center;
+        }
+        .dropdown label {
+            margin-right: 10px;
             color: #0f0;
-            flex: 0 0 auto; /* Prevent shrinking */
         }
-        .month-selector div:hover {
-            background: #0c0;
+        .dropdown select {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
         .green-line {
             height: 2px;
@@ -150,7 +159,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+            apiKey: "YOUR_API_KEY",
             authDomain: "cockrumfinance.firebaseapp.com",
             projectId: "cockrumfinance",
             storageBucket: "cockrumfinance.appspot.com",
@@ -203,9 +212,7 @@
             let previousDayBalance = initialCashBalance;
             for (let day = 1; day <= daysInMonth; day++) {
                 const creditInput = document.getElementById(`credit-${day}`);
-                const creditDescriptionInput = document.getElementById(`credit-description-${day}`);
                 const debitInput = document.getElementById(`debit-${day}`);
-                const debitDescriptionInput = document.getElementById(`debit-description-${day}`);
                 const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
                 const cashBalance = previousDayBalance + credit - Math.abs(debit); // Subtract debit as a positive value
@@ -218,9 +225,7 @@
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
                     credit: credit,
                     debit: debit,
-                    cash: cashBalance,
-                    creditDescription: creditDescriptionInput.value || '',
-                    debitDescription: debitDescriptionInput.value || ''
+                    cash: cashBalance
                 });
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
@@ -259,9 +264,9 @@
                 dayElement.innerHTML = `
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
-                    <input type="text" id="credit-description-${day}" class="credit-description" placeholder="Description" style="color: green;" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
-                    <input type="text" id="debit-description-${day}" class="debit-description" placeholder="Description" style="color: red;" onchange="calculateBalances()">
+                    <input type="text" id="credit-desc-${day}" class="credit-desc" placeholder="Description" style="color: green;" onchange="saveDescription(${day}, 'credit')">
+                    <input type="text" id="debit-desc-${day}" class="debit-desc" placeholder="Description" style="color: red;" onchange="saveDescription(${day}, 'debit')">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -272,8 +277,8 @@
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
-                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
-                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
+                    document.getElementById(`credit-desc-${day}`).value = data.creditDesc || '';
+                    document.getElementById(`debit-desc-${day}`).value = data.debitDesc || '';
                 }
             }
 
@@ -297,18 +302,23 @@
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
+        
+        function saveDescription(day, type) {
+            const desc = document.getElementById(`${type}-desc-${day}`).value;
+            const field = type === 'credit' ? 'creditDesc' : 'debitDesc';
+            db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).update({
+                [field]: desc
+            });
+        }
     </script>
 </head>
 <body>
     <div id="finance-tracker" class="container">
-        <h1>Fitneez</h1>
-        <h2>Cash Flow</h2>
         <div class="menu-bar">
             <div class="menu-links">
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
-                <a href="real_estate.html">Real Estate</a>
             </div>
             <div class="menu-buttons">
                 <button class="theme-button" onclick="toggleTheme()">Theme</button>
@@ -316,8 +326,35 @@
             </div>
         </div>
         <div id="content">
-            <div class="green-line"></div>
-            <div class="month-selector"></div>
+            <div class="controls">
+                <h1>Fitneez</h1>
+                <div class="dropdown">
+                    <label for="month-select">Select Month:</label>
+                    <select id="month-select">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <label for="year-select">Select Year:</label>
+                    <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <h2>Cash Flow</h2>
+            </div>
             <div class="green-line"></div>
             <div class="form-group">
                 <label for="initial-cash-balance">Initial Cash Balance:</label>
@@ -341,6 +378,7 @@
     </div>
 </body>
 </html>
+
 
 
 
