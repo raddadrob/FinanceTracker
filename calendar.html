@@ -195,7 +195,6 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
-                    renderMonthSelector();
                     renderCalendar();
                 } else {
                     window.location.href = 'login.html';
@@ -223,7 +222,7 @@
                 cashBalances[day] = cashBalance;
                 document.getElementById(`cash-${day}`).innerText = `$${formatNumber(cashBalance)}`;
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
-                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
+                               debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : ''; // Ensure debit is displayed as negative
                 previousDayBalance = cashBalance;
 
                 db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
@@ -269,8 +268,6 @@
                     <header>${day}</header>
                     <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
                     <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
-                    <input type="text" id="credit-description-${day}" class="credit-description" placeholder="Credit Description" onchange="calculateBalances()">
-                    <input type="text" id="debit-description-${day}" class="debit-description" placeholder="Debit Description" onchange="calculateBalances()">
                     <div>Cash: <span id="cash-${day}">$0</span></div>
                 `;
                 calendar.appendChild(dayElement);
@@ -281,26 +278,10 @@
                     document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
                     document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : ''; // Ensure debit is displayed as negative
                     document.getElementById(`cash-${day}`).innerText = `$${formatNumber(data.cash)}`;
-                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
-                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
                 }
             }
 
             calculateBalances();
-        }
-
-        function renderMonthSelector() {
-            const monthSelector = document.querySelector('.month-selector');
-            monthSelector.innerHTML = '';
-            monthNames.forEach((monthName, index) => {
-                const monthDiv = document.createElement('div');
-                monthDiv.innerText = monthName;
-                monthDiv.onclick = () => {
-                    currentMonth = index;
-                    renderCalendar();
-                };
-                monthSelector.appendChild(monthDiv);
-            });
         }
 
         function formatNumber(value) {
@@ -373,6 +354,8 @@
     </div>
 </body>
 </html>
+
+
 
 
 
