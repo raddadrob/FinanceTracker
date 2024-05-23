@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Fitneez</title>
+    <title>Summary - Fitneez</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -14,128 +14,357 @@
             padding: 20px;
         }
         .container {
-            max-width: 400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: #333;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
         }
         h1 {
             text-align: center;
             color: #0f0;
         }
-        .form-group {
-            margin-bottom: 15px;
+        .menu-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
+        .menu-links {
+            display: flex;
+            gap: 15px;
         }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #555;
+        .menu-bar a {
+            color: #0f0;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: #444;
             border-radius: 4px;
-            background: #222;
-            color: #fff;
         }
-        .form-group button {
-            width: 100%;
-            padding: 10px;
-            background-color: #0f0;
+        .menu-bar a:hover {
+            background: #0c0;
+        }
+        .menu-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .logoff-button {
+            background: #0f0;
             color: #000;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
-        .form-group button:hover {
-            background-color: #0c0;
+        .logoff-button:hover {
+            background: #0c0;
         }
-        .message {
-            text-align: center;
-            margin: 15px 0;
+        .section {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #444;
+        }
+        th, td {
+            color: #fff;
+        }
+        #total-liabilities {
+            color: red;
+            text-decoration: underline double;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        .chart-container canvas {
+            background: #333;
+            border-radius: 8px;
+        }
+        .dropdown {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .dropdown label {
+            margin-right: 10px;
             color: #0f0;
+        }
+        .dropdown select {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="session.js"></script> <!-- Include session.js -->
     <script>
-        function logIn() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    sessionStorage.setItem('userLoggedIn', 'true');
-                    window.location.href = 'index.html';
-                })
-                .catch((error) => {
-                    console.error('Error logging in:', error);
-                });
-        }
+        let chart;
 
-        function register() {
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    sessionStorage.setItem('userLoggedIn', 'true');
-                    window.location.href = 'index.html';
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/email-already-in-use') {
-                        alert('Email already in use. Please log in.');
-                        window.location.href = 'login.html';
-                    } else {
-                        console.error('Error registering:', error);
-                    }
-                });
-        }
-
-        function forgotPassword() {
-            const email = document.getElementById('login-email').value;
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    alert('Password reset email sent.');
-                    window.location.reload();
-                })
-                .catch((error) => {
-                    console.error('Error sending password reset email:', error);
-                });
+        function logOff() {
+            auth.signOut().then(() => {
+                sessionStorage.removeItem('userLoggedIn');
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (user && sessionStorage.getItem('userLoggedIn')) {
-                    window.location.href = 'index.html';
+                if (!user || !sessionStorage.getItem('userLoggedIn')) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
                 }
             });
         });
+
+        async function loadSummary() {
+            const stocksAndBonds = await getTotal('stocks_and_bonds');
+            const realEstate = await getTotal('real_estate');
+            const miscAssets = await getTotal('misc_assets');
+            const liabilities = await getTotal('liabilities');
+            const totalAssets = stocksAndBonds + realEstate + miscAssets;
+            const netWorth = totalAssets - liabilities;
+
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(stocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(realEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(miscAssets)}`;
+            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(liabilities))}`;
+            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
+
+            const currentMonth = new Date().getMonth();
+            const monthName = new Date().toLocaleString('default', { month: 'long' });
+            const currentYear = new Date().getFullYear();
+            document.getElementById('month-select').value = monthName;
+            document.getElementById('year-select').value = currentYear;
+            await loadChartData(currentYear, currentMonth);
+        }
+
+        async function getTotal(collection) {
+            const snapshot = await db.collection(collection).get();
+            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
+        }
+
+        async function loadChartData(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const credits = Array(daysInMonth).fill(0);
+            const debits = Array(daysInMonth).fill(0);
+            const creditDescriptions = Array(daysInMonth).fill("");
+            const debitDescriptions = Array(daysInMonth).fill("");
+            const cashBalances = Array(daysInMonth).fill(0);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    credits[day - 1] = data.credit;
+                    debits[day - 1] = data.debit;
+                    cashBalances[day - 1] = data.cash;
+                    creditDescriptions[day - 1] = data.creditDescription || "";
+                    debitDescriptions[day - 1] = data.debitDescription || "";
+                }
+            }
+
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Credits',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            borderWidth: 1,
+                            data: credits
+                        },
+                        {
+                            label: 'Debits',
+                            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1,
+                            data: debits
+                        },
+                        {
+                            label: 'Daily Cash Balance',
+                            type: 'line',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            fill: false,
+                            data: cashBalances
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#0f0' // Change x-axis labels color to green
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#0f0', // Change y-axis labels color to green
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 0, 0.2)' // Change y-axis grid lines color to green
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#0f0'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const datasetIndex = context.datasetIndex;
+                                    const value = context.raw;
+                                    if (datasetIndex === 0) { // Credits
+                                        return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
+                                    } else if (datasetIndex === 1) { // Debits
+                                        return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
+                                    } else { // Cash Balance
+                                        return `Cash Balance: $${value.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateChart() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
+            const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
+            await loadChartData(selectedYear, monthIndex);
+        }
+
+        function formatNumber(value) {
+            return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
     </script>
 </head>
 <body>
-    <div class="container">
+    <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
-        <div class="form-group">
-            <label for="login-email">Email</label>
-            <input type="email" id="login-email" placeholder="Enter your email">
+        <div class="menu-bar">
+            <div class="menu-links">
+                <a href="index.html">Summary</a>
+                <a href="details.html">Balance Sheet</a>
+                <a href="calendar.html">Cash Flow</a>
+                <a href="real_estate.html">Real Estate</a>
+            </div>
+            <div class="menu-buttons">
+                <button class="logoff-button" onclick="logOff()">Log Off</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="login-password">Password</label>
-            <input type="password" id="login-password" placeholder="Enter your password">
-        </div>
-        <div class="form-group">
-            <button onclick="logIn()">Log In</button>
-        </div>
-        <div class="form-group">
-            <button onclick="register()">Register</button>
-        </div>
-        <div class="form-group">
-            <button onclick="forgotPassword()">Forgot Password</button>
+        <div id="content" style="flex: 1;">
+            <div class="section">
+                <h2>Summary</h2>
+                <table>
+                    <tr>
+                        <th>Total Stocks & Bonds</th>
+                        <td id="total-stocks_and_bonds">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Real Estate</th>
+                        <td id="total-real_estate">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Misc. Assets</th>
+                        <td id="total-misc_assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Assets</th>
+                        <td id="total-assets">$0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Liabilities</th>
+                        <td id="total-liabilities">-$0</td>
+                    </tr>
+                    <tr class="total">
+                        <th>Net Worth</th>
+                        <td id="net-worth">$0</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="section">
+                <h2>Cash Flow</h2>
+                <div class="dropdown">
+                    <label>Select Month: </label>
+                    <select id="month-select">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </body>
 </html>
+
 
 
