@@ -234,6 +234,8 @@
                     cash: cashBalance,
                     creditDescription: creditDescription.value,
                     debitDescription: debitDescription.value
+                }).catch(error => {
+                    console.error("Error storing document: ", error);
                 });
             }
             document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
