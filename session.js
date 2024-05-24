@@ -21,13 +21,16 @@ auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
     });
 
 auth.onAuthStateChanged((user) => {
-    if (!user) {
-        sessionStorage.removeItem('userLoggedIn');
-        if (!['/login.html'].includes(window.location.pathname)) {
-            window.location.href = 'login.html';
+    if (user) {
+        sessionStorage.setItem('userLoggedIn', 'true');
+        if (window.location.pathname === '/login.html') {
+            window.location.href = 'index.html';
         }
     } else {
-        sessionStorage.setItem('userLoggedIn', 'true');
+        sessionStorage.removeItem('userLoggedIn');
+        if (window.location.pathname !== '/login.html') {
+            window.location.href = 'login.html';
+        }
     }
 });
 
