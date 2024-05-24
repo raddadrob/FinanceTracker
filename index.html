@@ -125,15 +125,13 @@
         let chart;
 
         document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    loadSummary();
-                    document.getElementById('month-select').addEventListener('change', updateChart);
-                    document.getElementById('year-select').addEventListener('change', updateChart);
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
+            if (!sessionStorage.getItem('userLoggedIn')) {
+                window.location.href = 'login.html';
+            } else {
+                loadSummary();
+                document.getElementById('month-select').addEventListener('change', updateChart);
+                document.getElementById('year-select').addEventListener('change', updateChart);
+            }
         });
 
         async function loadSummary() {
@@ -356,7 +354,6 @@
     </div>
 </body>
 </html>
-
 
 
 
