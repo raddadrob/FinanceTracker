@@ -12,6 +12,14 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+    .then(() => {
+        console.log('Session persistence set.');
+    })
+    .catch((error) => {
+        console.error('Error setting session persistence:', error);
+    });
+
 auth.onAuthStateChanged((user) => {
     if (!user) {
         sessionStorage.removeItem('userLoggedIn');
@@ -31,5 +39,4 @@ function logOff() {
         console.error('Error signing out:', error);
     });
 }
-
 
