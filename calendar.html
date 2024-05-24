@@ -31,7 +31,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+        }
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
         }
         .menu-links {
             display: flex;
@@ -51,7 +58,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button, .theme-button {
+        .logoff-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -59,7 +66,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover, .theme-button:hover {
+        .logoff-button:hover {
             background: #0c0;
         }
         .controls {
@@ -83,31 +90,6 @@
             border-radius: 4px;
             cursor: pointer;
             margin-right: 10px;
-        }
-        .dropdown select:focus {
-            outline: none;
-            box-shadow: 0 0 5px #0f0;
-        }
-        .green-line {
-            height: 2px;
-            background-color: #0f0;
-            margin: 10px 0;
-        }
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            margin-right: 10px;
-            color: #0f0;
-        }
-        .form-group input {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background: #222;
-            color: #fff;
         }
         .calendar {
             display: grid;
@@ -161,6 +143,16 @@
             font-weight: bold;
         }
         @media (max-width: 600px) {
+            .menu-icon {
+                display: block;
+            }
+            .menu-links {
+                display: none;
+                flex-direction: column;
+            }
+            .menu-links.active {
+                display: flex;
+            }
             .calendar {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -202,6 +194,11 @@
             });
         }
 
+        function toggleMenu() {
+            const menuLinks = document.getElementById('menu-links');
+            menuLinks.classList.toggle('active');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -238,11 +235,11 @@
                 cashElement.innerText = `$${formatNumber(cashBalance)}`;
                 cashElement.style.fontWeight = 'bold';
                 if (cashBalance > 5000) {
-                    cashElement.style.color = '#0f0'; // Green
+                    cashElement.style.color = '#0f0';
                 } else if (cashBalance >= 0 && cashBalance <= 4999) {
-                    cashElement.style.color = 'yellow'; // Yellow
+                    cashElement.style.color = 'yellow';
                 } else {
-                    cashElement.style.color = 'red'; // Red
+                    cashElement.style.color = 'red';
                 }
                 creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
                 debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
@@ -266,7 +263,7 @@
             const month = monthNames[currentMonth] + ' ' + currentYear;
             document.getElementById('month').innerText = month;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
+            const startDay = new Date(currentYear, currentMonth, 1).getDay();
 
             const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
             if (initialBalanceDoc.exists) {
@@ -277,10 +274,8 @@
                 document.getElementById('initial-cash-balance').value = '';
             }
 
-            // Clear existing calendar
             calendar.innerHTML = '';
 
-            // Fill initial empty days
             for (let i = 0; i < startDay; i++) {
                 const emptyElement = document.createElement('div');
                 emptyElement.classList.add('day');
@@ -311,11 +306,11 @@
                     cashElement.innerText = `$${formatNumber(data.cash)}`;
                     cashElement.style.fontWeight = 'bold';
                     if (data.cash > 5000) {
-                        cashElement.style.color = '#0f0'; // Green
+                        cashElement.style.color = '#0f0';
                     } else if (data.cash >= 0 && data.cash <= 4999) {
-                        cashElement.style.color = 'yellow'; // Yellow
+                        cashElement.style.color = 'yellow';
                     } else {
-                        cashElement.style.color = 'red'; // Red
+                        cashElement.style.color = 'red';
                     }
                 }
             }
@@ -366,14 +361,16 @@
     <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
         <div class="menu-bar">
-            <div class="menu-links">
+            <div class="menu-icon" onclick="toggleMenu()">
+                &#9776;
+            </div>
+            <div class="menu-links" id="menu-links">
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
                 <a href="real_estate.html">Real Estate</a>
             </div>
             <div class="menu-buttons">
-                <button class="theme-button" onclick="toggleTheme()">Theme</button>
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
@@ -386,7 +383,6 @@
                 </div>
                 <h2>Cash Flow</h2>
             </div>
-            <div class="green-line"></div>
             <div class="form-group">
                 <label for="initial-cash-balance">Initial Cash Balance:</label>
                 <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
@@ -409,7 +405,6 @@
     </div>
 </body>
 </html>
-
 
 
 
