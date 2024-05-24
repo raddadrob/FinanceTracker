@@ -137,11 +137,14 @@
             width: 25%;
         }
         .popover {
-            position: absolute;
+            position: fixed; /* Fixed position to center on the screen */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Offset by half of its own size */
             z-index: 10;
             background: #444;
             color: #fff;
-            padding: 10px; /* Reduced padding */
+            padding: 20px; /* Adjusted padding */
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             display: none;
@@ -191,8 +194,8 @@
             }
             .popover {
                 width: 90%;
-                left: 5%;
-                right: 5%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
         }
     </style>
@@ -308,9 +311,6 @@
             popoverValue.value = value;
             saveButton.onclick = () => saveEditItem(collection, id);
 
-            const rect = event.target.getBoundingClientRect();
-            popover.style.top = `${rect.bottom + window.scrollY}px`;
-            popover.style.left = `${rect.left + window.scrollX}px`;
             popover.style.display = 'flex';
         }
 
@@ -537,6 +537,7 @@
     </div>
 </body>
 </html>
+
 
 
 
