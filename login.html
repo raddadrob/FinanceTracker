@@ -105,6 +105,12 @@
                     console.error('Error sending password reset email:', error);
                 });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('userLoggedIn') === 'true') {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </head>
 <body>
