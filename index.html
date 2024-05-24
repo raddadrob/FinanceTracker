@@ -86,7 +86,7 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 10px;
-            width: 100%;
+            width: 90%; /* Adjusted width */
             text-align: center;
             cursor: pointer;
         }
@@ -131,10 +131,36 @@
         .popover button:hover {
             background: #0c0;
         }
+        #cash-flow-chart {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        @media (max-width: 600px) {
+            .menu-icon {
+                display: block;
+            }
+            .menu-links {
+                display: none;
+                flex-direction: column;
+            }
+            .menu-links.active {
+                display: flex;
+            }
+            .summary-tile {
+                width: 100%; /* Full width for mobile */
+            }
+            .popover {
+                width: 90%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
@@ -218,6 +244,9 @@
             document.getElementById('total-real_estate').parentNode.onclick = () => showDetails('Real Estate', realEstate);
             document.getElementById('total-misc_assets').parentNode.onclick = () => showDetails('Misc. Assets', miscAssets);
             document.getElementById('total-liabilities').parentNode.onclick = () => showDetails('Liabilities', liabilities);
+
+            // Update Cash Flow Chart
+            updateCashFlowChart();
         }
 
         function formatNumber(value) {
@@ -269,6 +298,31 @@
             document.getElementById('details-popover').style.display = 'none';
         }
 
+        function updateCashFlowChart() {
+            const ctx = document.getElementById('cash-flow-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                    datasets: [{
+                        label: 'Cash Flow',
+                        data: [1200, 1900, 3000, 500, 2000, 3000, 4500],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
         window.onclick = function(event) {
             const popover = document.getElementById('details-popover');
             if (!event.target.closest('.popover') && !event.target.closest('.summary-tile')) {
@@ -316,6 +370,10 @@
                     Net Worth: <span id="net-worth">$0</span>
                 </div>
             </div>
+            <div class="section">
+                <h2>Cash Flow</h2>
+                <canvas id="cash-flow-chart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -327,7 +385,6 @@
     </div>
 </body>
 </html>
-
 
 
 
