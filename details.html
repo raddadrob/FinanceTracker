@@ -31,7 +31,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+        }
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
         }
         .menu-links {
             display: flex;
@@ -51,7 +58,7 @@
             display: flex;
             gap: 10px;
         }
-        .logoff-button, .theme-button {
+        .logoff-button {
             background: #0f0;
             color: #000;
             padding: 10px 20px;
@@ -59,7 +66,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .logoff-button:hover, .theme-button:hover {
+        .logoff-button:hover {
             background: #0c0;
         }
         .section {
@@ -121,10 +128,17 @@
             width: 15%;
             text-align: center;
         }
-        button {
-            margin: 2px;
-        }
         @media (max-width: 600px) {
+            .menu-icon {
+                display: block;
+            }
+            .menu-links {
+                display: none;
+                flex-direction: column;
+            }
+            .menu-links.active {
+                display: flex;
+            }
             .form-group {
                 flex-direction: column;
                 align-items: flex-start;
@@ -169,6 +183,11 @@
             });
         }
 
+        function toggleMenu() {
+            const menuLinks = document.getElementById('menu-links');
+            menuLinks.classList.toggle('active');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -195,7 +214,7 @@
                 data.id = doc.id;
                 dataArray.push(data);
             });
-            dataArray.sort((a, b) => b.value - a.value);  // Sort by value descending
+            dataArray.sort((a, b) => b.value - a.value);
             callback(collection, dataArray);
         }
 
@@ -248,19 +267,19 @@
             if (description && !isNaN(value)) {
                 db.collection(collection).doc(id).update({
                     description: description,
-                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
+                    value: collection === 'liabilities' ? Math.abs(value) : value,
                     previousValue: item.value
                 }).then(() => {
                     item.description = description;
                     item.value = value;
-                    loadData(); // Reload data to update the table and summary
+                    loadData();
                 });
             }
         }
 
         async function deleteItem(collection, index, id) {
             await db.collection(collection).doc(id).delete();
-            loadData(); // Reload data to update the table and summary
+            loadData();
         }
 
         async function addAsset(collection) {
@@ -278,17 +297,17 @@
             if (description && !isNaN(value)) {
                 const newItem = {
                     description,
-                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
+                    value: collection === 'liabilities' ? Math.abs(value) : value,
                     previousValue: 0
                 };
                 const docRef = await db.collection(collection).add(newItem);
                 newItem.id = docRef.id;
-                console.log(`Added ${collection} item with ID ${newItem.id}`); // Logging
-                loadData(); // Reload data to update the table and summary
+                console.log(`Added ${collection} item with ID ${newItem.id}`);
+                loadData();
                 descriptionInput.value = '';
                 valueInput.value = '';
             } else {
-                console.log(`Failed to add item to ${collection}: Invalid input`); // Logging
+                console.log(`Failed to add item to ${collection}: Invalid input`);
             }
         }
 
@@ -329,7 +348,10 @@
     <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
         <div class="menu-bar">
-            <div class="menu-links">
+            <div class="menu-icon" onclick="toggleMenu()">
+                &#9776;
+            </div>
+            <div class="menu-links" id="menu-links">
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
@@ -352,7 +374,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Stocks & Bonds rows will go here -->
                     </tbody>
                 </table>
                 <div class="form-group">
@@ -374,7 +395,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Real Estate rows will go here -->
                     </tbody>
                 </table>
                 <div class="form-group">
@@ -396,7 +416,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Misc. Assets rows will go here -->
                     </tbody>
                 </table>
                 <div class="form-group">
@@ -418,7 +437,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Liability rows will go here -->
                     </tbody>
                 </table>
                 <div class="form-group">
@@ -461,7 +479,6 @@
     </div>
 </body>
 </html>
-
 
 
 
