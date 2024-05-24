@@ -41,26 +41,6 @@
             color: #fff;
             width: 100%;
         }
-        .menu-icon {
-            font-size: 24px;
-            cursor: pointer;
-            display: none;
-        }
-        .menu-links {
-            display: flex;
-            gap: 15px;
-        }
-        .menu-bar a {
-            color: #0f0;
-            text-decoration: none;
-            padding: 10px 20px;
-            background: #444;
-            border-radius: 4px;
-            font-size: 0.875rem;
-        }
-        .menu-bar a:hover {
-            background: #0c0;
-        }
         .dropdown {
             position: relative;
             display: inline-block;
@@ -72,6 +52,7 @@
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
+            left: 0; /* Align dropdown to the left */
         }
         .dropdown-content a {
             color: #0f0;
@@ -466,9 +447,6 @@
     <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
         <div class="menu-bar">
-            <div class="menu-icon" onclick="toggleMenu()">
-                &#9776;
-            </div>
             <div class="dropdown">
                 <button class="menu-icon">&#9776;</button>
                 <div class="dropdown-content">
