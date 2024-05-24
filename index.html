@@ -124,23 +124,16 @@
     <script>
         let chart;
 
-        function logOff() {
-            auth.signOut().then(() => {
-                sessionStorage.removeItem('userLoggedIn');
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            if (!sessionStorage.getItem('userLoggedIn')) {
-                window.location.href = 'login.html';
-            } else {
-                loadSummary();
-                document.getElementById('month-select').addEventListener('change', updateChart);
-                document.getElementById('year-select').addEventListener('change', updateChart);
-            }
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
         });
 
         async function loadSummary() {
