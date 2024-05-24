@@ -80,12 +80,12 @@
         .section {
             margin-bottom: 20px;
             width: 100%;
-            text-align: center; /* Center align section content */
+            text-align: center;
         }
         .summary-tiles-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center; /* Center align the tiles */
+            justify-content: center;
         }
         .summary-tile {
             background: #444;
@@ -93,7 +93,7 @@
             border-radius: 8px;
             margin: 10px;
             width: 100%;
-            max-width: 300px; /* Max width to maintain consistency */
+            max-width: 300px;
             text-align: center;
             cursor: pointer;
         }
@@ -149,7 +149,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
-            justify-content: center; /* Center the dropdowns */
+            justify-content: center;
         }
         .dropdown label {
             margin-right: 10px;
@@ -180,7 +180,7 @@
                 display: flex;
             }
             .summary-tile {
-                width: 100%; /* Full width for mobile */
+                width: 100%;
             }
             .popover {
                 width: 90%;
@@ -225,6 +225,14 @@
                     loadSummary();
                     document.getElementById('month-select').addEventListener('change', updateChart);
                     document.getElementById('year-select').addEventListener('change', updateChart);
+
+                    // Add event listeners for popups
+                    document.getElementById('total-stocks_and_bonds-tile').onclick = () => showDetails('Stocks & Bonds', 'stocks_and_bonds');
+                    document.getElementById('total-real_estate-tile').onclick = () => showDetails('Real Estate', 'real_estate');
+                    document.getElementById('total-misc_assets-tile').onclick = () => showDetails('Misc. Assets', 'misc_assets');
+                    document.getElementById('total-assets-tile').onclick = () => showDetails('Total Assets', 'assets');
+                    document.getElementById('total-liabilities-tile').onclick = () => showDetails('Liabilities', 'liabilities');
+                    document.getElementById('net-worth-tile').onclick = () => showDetails('Net Worth', 'net_worth');
                 }
             });
         });
@@ -316,19 +324,19 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#0f0' // Change x-axis labels color to green
+                                color: '#0f0'
                             }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: '#0f0', // Change y-axis labels color to green
+                                color: '#0f0',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
                             },
                             grid: {
-                                color: 'rgba(0, 255, 0, 0.2)' // Change y-axis grid lines color to green
+                                color: 'rgba(0, 255, 0, 0.2)'
                             }
                         }
                     },
@@ -344,11 +352,11 @@
                                     const dataIndex = context.dataIndex;
                                     const datasetIndex = context.datasetIndex;
                                     const value = context.raw;
-                                    if (datasetIndex === 0) { // Credits
+                                    if (datasetIndex === 0) {
                                         return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
-                                    } else if (datasetIndex === 1) { // Debits
+                                    } else if (datasetIndex === 1) {
                                         return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
-                                    } else { // Cash Balance
+                                    } else {
                                         return `Cash Balance: $${value.toLocaleString()}`;
                                     }
                                 }
@@ -370,7 +378,8 @@
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
-        function showDetails(title, dataArray) {
+        async function showDetails(title, collection) {
+            const dataArray = await getCollectionData(collection);
             const popover = document.getElementById('details-popover');
             const popoverTitle = document.getElementById('details-title');
             const popoverContent = document.getElementById('details-content');
@@ -409,6 +418,11 @@
             popoverContent.appendChild(table);
 
             popover.style.display = 'flex';
+        }
+
+        async function getCollectionData(collection) {
+            const snapshot = await db.collection(collection).get();
+            return snapshot.docs.map(doc => doc.data());
         }
 
         function closePopover() {
@@ -505,6 +519,7 @@
     </div>
 </body>
 </html>
+
 
 
 
