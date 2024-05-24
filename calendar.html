@@ -183,15 +183,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (!user || !sessionStorage.getItem('userLoggedIn')) {
-                    window.location.href = 'login.html';
-                } else {
-                    document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
-                    renderMonthSelector();
-                    renderCalendar();
-                }
-            });
+            if (!sessionStorage.getItem('userLoggedIn')) {
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
+                renderMonthSelector();
+                renderCalendar();
+            }
         });
 
         function setInitialCashBalance(event) {
