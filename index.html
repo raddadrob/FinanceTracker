@@ -61,6 +61,46 @@
         .menu-bar a:hover {
             background: #0c0;
         }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: #0f0;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #0c0;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .logoff-button {
+            background: #0f0;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
+        }
+        .logoff-button:hover {
+            background: #0c0;
+        }
         .section {
             margin-bottom: 20px;
             width: 100%;
@@ -152,22 +192,6 @@
             outline: none;
             box-shadow: 0 0 5px #0f0;
         }
-        .logoff-button {
-            background: #0f0;
-            color: #000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            margin-top: 20px;
-            width: 100%; /* Full width */
-            max-width: 200px; /* Adjust width for mobile */
-            text-align: center;
-        }
-        .logoff-button:hover {
-            background: #0c0;
-        }
         @media (max-width: 600px) {
             .menu-icon {
                 display: block;
@@ -234,17 +258,9 @@
                     document.getElementById('total-assets-tile').onclick = () => showDetails('Total Assets', 'assets');
                     document.getElementById('total-liabilities-tile').onclick = () => showDetails('Liabilities', 'liabilities');
                     document.getElementById('net-worth-tile').onclick = () => showDetails('Net Worth', 'net_worth');
-
-                    // Add event listener for hamburger menu
-                    document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
                 }
             });
         });
-
-        function toggleMenu() {
-            const menuLinks = document.getElementById('menu-links');
-            menuLinks.classList.toggle('active');
-        }
 
         async function loadSummary() {
             const stocksAndBonds = await getTotal('stocks_and_bonds');
@@ -453,11 +469,14 @@
             <div class="menu-icon" onclick="toggleMenu()">
                 &#9776;
             </div>
-            <div class="menu-links" id="menu-links">
-                <a href="index.html">Summary</a>
-                <a href="details.html">Balance Sheet</a>
-                <a href="calendar.html">Cash Flow</a>
-                <a href="real_estate.html">Real Estate</a>
+            <div class="dropdown">
+                <button class="menu-icon">&#9776;</button>
+                <div class="dropdown-content">
+                    <a href="index.html">Summary</a>
+                    <a href="details.html">Balance Sheet</a>
+                    <a href="calendar.html">Cash Flow</a>
+                    <a href="real_estate.html">Real Estate</a>
+                </div>
             </div>
         </div>
         <div id="content" style="flex: 1;">
