@@ -86,9 +86,11 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 10px;
-            width: 90%; /* Adjusted width */
+            width: 100%;
             text-align: center;
             cursor: pointer;
+            max-width: 300px;
+            margin: 10px auto; /* Center the tiles */
         }
         .popover {
             position: fixed;
@@ -131,10 +133,35 @@
         .popover button:hover {
             background: #0c0;
         }
-        #cash-flow-chart {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
+        .chart-container {
+            margin-top: 20px;
+        }
+        .chart-container canvas {
+            background: #333;
+            border-radius: 8px;
+        }
+        .dropdown {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            justify-content: center; /* Center the dropdowns */
+        }
+        .dropdown label {
+            margin-right: 10px;
+            color: #0f0;
+        }
+        .dropdown select {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
         }
         @media (max-width: 600px) {
             .menu-icon {
@@ -175,11 +202,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        let stocksAndBonds = [];
-        let realEstate = [];
-        let miscAssets = [];
-        let liabilities = [];
+        let chart;
 
         function logOff() {
             auth.signOut().then(() => {
@@ -189,64 +212,153 @@
             });
         }
 
-        function toggleMenu() {
-            const menuLinks = document.getElementById('menu-links');
-            menuLinks.classList.toggle('active');
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (user) {
-                    loadData();
-                } else {
+                if (!user) {
                     window.location.href = 'login.html';
+                } else {
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
                 }
             });
         });
 
-        async function loadData() {
-            await loadCollection('stocks_and_bonds', stocksAndBonds);
-            await loadCollection('real_estate', realEstate);
-            await loadCollection('misc_assets', miscAssets);
-            await loadCollection('liabilities', liabilities);
-            updateSummary();
-        }
+        async function loadSummary() {
+            const stocksAndBonds = await getTotal('stocks_and_bonds');
+            const realEstate = await getTotal('real_estate');
+            const miscAssets = await getTotal('misc_assets');
+            const liabilities = await getTotal('liabilities');
+            const totalAssets = stocksAndBonds + realEstate + miscAssets;
+            const netWorth = totalAssets - liabilities;
 
-        async function loadCollection(collection, dataArray) {
-            const snapshot = await db.collection(collection).get();
-            dataArray.length = 0;
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                dataArray.push(data);
-            });
-            dataArray.sort((a, b) => b.value - a.value);
-        }
-
-        function updateSummary() {
-            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
-            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
-            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
-            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
-
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(stocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(realEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(miscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
-            document.getElementById('total-liabilities').style.color = 'red';
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(liabilities))}`;
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
 
-            // Add event listeners for popups
-            document.getElementById('total-stocks_and_bonds').parentNode.onclick = () => showDetails('Stocks & Bonds', stocksAndBonds);
-            document.getElementById('total-real_estate').parentNode.onclick = () => showDetails('Real Estate', realEstate);
-            document.getElementById('total-misc_assets').parentNode.onclick = () => showDetails('Misc. Assets', miscAssets);
-            document.getElementById('total-liabilities').parentNode.onclick = () => showDetails('Liabilities', liabilities);
+            const currentMonth = new Date().getMonth();
+            const monthName = new Date().toLocaleString('default', { month: 'long' });
+            const currentYear = new Date().getFullYear();
+            document.getElementById('month-select').value = monthName;
+            document.getElementById('year-select').value = currentYear;
+            await loadChartData(currentYear, currentMonth);
+        }
 
-            // Update Cash Flow Chart
-            updateCashFlowChart();
+        async function getTotal(collection) {
+            const snapshot = await db.collection(collection).get();
+            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
+        }
+
+        async function loadChartData(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const credits = Array(daysInMonth).fill(0);
+            const debits = Array(daysInMonth).fill(0);
+            const creditDescriptions = Array(daysInMonth).fill("");
+            const debitDescriptions = Array(daysInMonth).fill("");
+            const cashBalances = Array(daysInMonth).fill(0);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    credits[day - 1] = data.credit;
+                    debits[day - 1] = data.debit;
+                    cashBalances[day - 1] = data.cash;
+                    creditDescriptions[day - 1] = data.creditDescription || "";
+                    debitDescriptions[day - 1] = data.debitDescription || "";
+                }
+            }
+
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Credits',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            borderWidth: 1,
+                            data: credits
+                        },
+                        {
+                            label: 'Debits',
+                            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1,
+                            data: debits
+                        },
+                        {
+                            label: 'Daily Cash Balance',
+                            type: 'line',
+                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            fill: false,
+                            data: cashBalances
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#0f0' // Change x-axis labels color to green
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#0f0', // Change y-axis labels color to green
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 0, 0.2)' // Change y-axis grid lines color to green
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#0f0'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const datasetIndex = context.datasetIndex;
+                                    const value = context.raw;
+                                    if (datasetIndex === 0) { // Credits
+                                        return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
+                                    } else if (datasetIndex === 1) { // Debits
+                                        return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
+                                    } else { // Cash Balance
+                                        return `Cash Balance: $${value.toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateChart() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
+            const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
+            await loadChartData(selectedYear, monthIndex);
         }
 
         function formatNumber(value) {
@@ -298,31 +410,6 @@
             document.getElementById('details-popover').style.display = 'none';
         }
 
-        function updateCashFlowChart() {
-            const ctx = document.getElementById('cash-flow-chart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                    datasets: [{
-                        label: 'Cash Flow',
-                        data: [1200, 1900, 3000, 500, 2000, 3000, 4500],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
         window.onclick = function(event) {
             const popover = document.getElementById('details-popover');
             if (!event.target.closest('.popover') && !event.target.closest('.summary-tile')) {
@@ -372,7 +459,33 @@
             </div>
             <div class="section">
                 <h2>Cash Flow</h2>
-                <canvas id="cash-flow-chart"></canvas>
+                <div class="dropdown">
+                    <label>Select Month: </label>
+                    <select id="month-select">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <select id="year-select">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -385,6 +498,7 @@
     </div>
 </body>
 </html>
+
 
 
 
