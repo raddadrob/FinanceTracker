@@ -115,23 +115,68 @@
             outline: none;
             box-shadow: 0 0 5px #0f0;
         }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            .menu-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .menu-links {
+                flex-direction: column;
+                width: 100%;
+            }
+            .menu-bar a {
+                width: 100%;
+                text-align: center;
+            }
+            .section {
+                margin-bottom: 10px;
+            }
+            table {
+                font-size: 14px;
+            }
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="session.js"></script>
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+            authDomain: "cockrumfinance.firebaseapp.com",
+            projectId: "cockrumfinance",
+            storageBucket: "cockrumfinance.appspot.com",
+            messagingSenderId: "446623626941",
+            appId: "1:446623626941:web:3dc1d2e435caf61d04e9d4",
+            measurementId: "G-JFRC4K0BBF"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
         let chart;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!sessionStorage.getItem('userLoggedIn')) {
+        function logOff() {
+            auth.signOut().then(() => {
                 window.location.href = 'login.html';
-            } else {
-                loadSummary();
-                document.getElementById('month-select').addEventListener('change', updateChart);
-                document.getElementById('year-select').addEventListener('change', updateChart);
-            }
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadSummary();
+                    document.getElementById('month-select').addEventListener('change', updateChart);
+                    document.getElementById('year-select').addEventListener('change', updateChart);
+                }
+            });
         });
 
         async function loadSummary() {
