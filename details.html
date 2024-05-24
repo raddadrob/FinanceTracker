@@ -125,8 +125,24 @@
             width: 15%;
         }
         th:nth-child(4), td:nth-child(4) {
-            width: 15%;
+            width: 25%;
             text-align: center;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        .action-button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .action-button:hover {
+            background: #0c0;
         }
         @media (max-width: 600px) {
             .menu-icon {
@@ -150,6 +166,41 @@
             table {
                 font-size: 14px;
             }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #333;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            color: #fff;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -244,12 +295,14 @@
                 deltaCell.style.fontStyle = 'italic';
                 valueCell.appendChild(deltaCell);
                 const actionCell = row.insertCell(3);
-                actionCell.style.textAlign = 'center';
+                actionCell.className = 'action-buttons';
                 const editButton = document.createElement('button');
-                editButton.innerText = 'Edit';
-                editButton.onclick = () => editItem(collection, index, item.id);
+                editButton.className = 'action-button';
+                editButton.innerHTML = '✏️';
+                editButton.onclick = () => openEditModal(collection, index, item.id);
                 const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Delete';
+                deleteButton.className = 'action-button';
+                deleteButton.innerHTML = '🗑️';
                 deleteButton.onclick = () => deleteItem(collection, index, item.id);
                 actionCell.appendChild(editButton);
                 actionCell.appendChild(deleteButton);
@@ -260,20 +313,36 @@
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
-        function editItem(collection, index, id) {
+        function openEditModal(collection, index, id) {
             const item = getItem(collection, index);
-            const description = prompt('Enter new description:', item.description);
-            const value = parseFloat(prompt('Enter new value:', item.value));
+            const modal = document.getElementById('editModal');
+            const descriptionInput = document.getElementById('edit-description');
+            const valueInput = document.getElementById('edit-value');
+            const saveButton = document.getElementById('saveEditButton');
+
+            descriptionInput.value = item.description;
+            valueInput.value = item.value;
+            saveButton.onclick = () => saveEditItem(collection, id);
+
+            modal.style.display = 'block';
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'none';
+        }
+
+        async function saveEditItem(collection, id) {
+            const description = document.getElementById('edit-description').value;
+            const value = parseFloat(document.getElementById('edit-value').value);
             if (description && !isNaN(value)) {
-                db.collection(collection).doc(id).update({
+                await db.collection(collection).doc(id).update({
                     description: description,
                     value: collection === 'liabilities' ? Math.abs(value) : value,
-                    previousValue: item.value
-                }).then(() => {
-                    item.description = description;
-                    item.value = value;
-                    loadData();
+                    previousValue: getItemById(collection, id).value
                 });
+                loadData();
+                closeEditModal();
             }
         }
 
@@ -342,6 +411,28 @@
                     return null;
             }
         }
+
+        function getItemById(collection, id) {
+            switch (collection) {
+                case 'stocks_and_bonds':
+                    return stocksAndBonds.find(item => item.id === id);
+                case 'real_estate':
+                    return realEstate.find(item => item.id === id);
+                case 'misc_assets':
+                    return miscAssets.find(item => item.id === id);
+                case 'liabilities':
+                    return liabilities.find(item => item.id === id);
+                default:
+                    return null;
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
     </script>
 </head>
 <body>
@@ -355,7 +446,7 @@
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
-               <a href="real_estate.html">Real Estate</a> 
+                <a href="real_estate.html">Real Estate</a>
             </div>
             <div class="menu-buttons">
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
@@ -477,9 +568,25 @@
             </div>
         </div>
     </div>
+
+    <!-- The Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Item</h2>
+            <div class="form-group">
+                <label for="edit-description">Description</label>
+                <input type="text" id="edit-description">
+            </div>
+            <div class="form-group">
+                <label for="edit-value">Value</label>
+                <input type="number" id="edit-value">
+            </div>
+            <button id="saveEditButton" class="action-button">Save</button>
+        </div>
+    </div>
 </body>
 </html>
-
 
 
 
