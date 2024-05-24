@@ -87,47 +87,58 @@
         function logIn() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+            console.log('Attempting to log in with email:', email);
+
             auth.signInWithEmailAndPassword(email, password)
                 .then(() => {
+                    console.log('Login successful. Redirecting to index.html');
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
                     console.error('Error logging in:', error);
+                    alert(`Error logging in: ${error.message}`);
                 });
         }
 
         function register() {
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
+            console.log('Attempting to register with email:', email);
+
             auth.createUserWithEmailAndPassword(email, password)
                 .then(() => {
+                    console.log('Registration successful. Redirecting to index.html');
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
+                    console.error('Error registering:', error);
+                    alert(`Error registering: ${error.message}`);
                     if (error.code === 'auth/email-already-in-use') {
-                        alert('Email already in use. Please log in.');
                         window.location.href = 'login.html';
-                    } else {
-                        console.error('Error registering:', error);
                     }
                 });
         }
 
         function forgotPassword() {
             const email = document.getElementById('login-email').value;
+            console.log('Attempting to send password reset email to:', email);
+
             auth.sendPasswordResetEmail(email)
                 .then(() => {
+                    console.log('Password reset email sent.');
                     alert('Password reset email sent.');
                     window.location.reload();
                 })
                 .catch((error) => {
                     console.error('Error sending password reset email:', error);
+                    alert(`Error sending password reset email: ${error.message}`);
                 });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
                 if (user) {
+                    console.log('User is already logged in. Redirecting to index.html');
                     window.location.href = 'index.html';
                 }
             });
