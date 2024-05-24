@@ -14,18 +14,15 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 auth.onAuthStateChanged((user) => {
-    if (!user) {
-        sessionStorage.removeItem('userLoggedIn');
-        window.location.href = 'login.html';
-    } else {
+    if (user) {
         sessionStorage.setItem('userLoggedIn', 'true');
+    } else {
+        sessionStorage.removeItem('userLoggedIn');
     }
 });
 
 window.addEventListener('beforeunload', () => {
-    auth.signOut().then(() => {
-        sessionStorage.removeItem('userLoggedIn');
-    }).catch((error) => {
+    auth.signOut().catch((error) => {
         console.error('Error signing out:', error);
     });
 });
