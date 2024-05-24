@@ -77,15 +77,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="session.js"></script> <!-- Include session.js -->
     <script>
-        function logOff() {
-            auth.signOut().then(() => {
-                sessionStorage.removeItem('userLoggedIn');
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             if (!sessionStorage.getItem('userLoggedIn')) {
                 window.location.href = 'login.html';
@@ -120,7 +111,6 @@
     </div>
 </body>
 </html>
-
 
 
 
