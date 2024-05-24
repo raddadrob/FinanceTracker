@@ -151,6 +151,7 @@
             flex-direction: column;
             font-size: 0.875rem; /* Smaller font size */
             width: 50%; /* Adjusted width */
+            max-width: 300px; /* Limit the width on larger screens */
         }
         .popover input {
             margin-bottom: 10px;
@@ -309,7 +310,7 @@
             const saveButton = document.getElementById('saveEditButton');
 
             popoverDescription.innerText = description;
-            popoverValue.value = value;
+            popoverValue.value = formatNumber(value);
             saveButton.onclick = () => saveEditItem(collection, id);
 
             popover.style.display = 'flex';
