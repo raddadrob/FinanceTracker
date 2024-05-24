@@ -150,6 +150,7 @@
             display: none;
             flex-direction: column;
             font-size: 0.875rem; /* Smaller font size */
+            width: 50%; /* Adjusted width */
         }
         .popover input {
             margin-bottom: 10px;
@@ -319,7 +320,7 @@
         }
 
         async function saveEditItem(collection, id) {
-            const value = parseFloat(document.getElementById('popover-value').value);
+            const value = parseFloat(document.getElementById('popover-value').value.replace(/[$,]/g, ''));
             if (!isNaN(value)) {
                 await db.collection(collection).doc(id).update({
                     value: collection === 'liabilities' ? Math.abs(value) : value,
@@ -340,7 +341,7 @@
             }
 
             const description = descriptionInput.value;
-            const value = parseFloat(valueInput.value);
+            const value = parseFloat(valueInput.value.replace(/[$,]/g, ''));
 
             if (description && !isNaN(value)) {
                 const newItem = {
@@ -431,7 +432,7 @@
                 </table>
                 <div class="form-group">
                     <input type="text" id="stocks_and_bonds-description" placeholder="Description">
-                    <input type="number" id="stocks_and_bonds-value" placeholder="Value">
+                    <input type="text" id="stocks_and_bonds-value" placeholder="Value">
                     <button onclick="addAsset('stocks_and_bonds')">Add Stocks & Bonds</button>
                 </div>
             </div>
@@ -451,7 +452,7 @@
                 </table>
                 <div class="form-group">
                     <input type="text" id="real_estate-description" placeholder="Description">
-                    <input type="number" id="real_estate-value" placeholder="Value">
+                    <input type="text" id="real_estate-value" placeholder="Value">
                     <button onclick="addAsset('real_estate')">Add Real Estate</button>
                 </div>
             </div>
@@ -471,7 +472,7 @@
                 </table>
                 <div class="form-group">
                     <input type="text" id="misc_assets-description" placeholder="Description">
-                    <input type="number" id="misc_assets-value" placeholder="Value">
+                    <input type="text" id="misc_assets-value" placeholder="Value">
                     <button onclick="addAsset('misc_assets')">Add Misc. Assets</button>
                 </div>
             </div>
@@ -491,7 +492,7 @@
                 </table>
                 <div class="form-group">
                     <input type="text" id="liabilities-description" placeholder="Description">
-                    <input type="number" id="liabilities-value" placeholder="Value">
+                    <input type="text" id="liabilities-value" placeholder="Value">
                     <button onclick="addAsset('liabilities')">Add Liability</button>
                 </div>
             </div>
@@ -531,12 +532,19 @@
     <!-- Popover for Editing -->
     <div id="popover" class="popover">
         <div id="popover-description"></div>
-        <input type="number" id="popover-value" placeholder="Enter value">
+        <input type="text" id="popover-value" placeholder="Enter value">
         <button id="saveEditButton">Save</button>
         <button onclick="closePopover()">Cancel</button>
     </div>
+    <script>
+        document.getElementById('popover-value').addEventListener('input', function(e) {
+            const value = e.target.value.replace(/[$,]/g, '');
+            e.target.value = value ? `$${Number(value).toLocaleString()}` : '';
+        });
+    </script>
 </body>
 </html>
+
 
 
 
