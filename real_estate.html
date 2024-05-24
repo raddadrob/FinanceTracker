@@ -74,6 +74,7 @@
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="session.js"></script> <!-- Include session.js -->
     <script>
         function logOff() {
@@ -86,11 +87,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (!user || !sessionStorage.getItem('userLoggedIn')) {
-                    window.location.href = 'login.html';
-                }
-            });
+            if (!sessionStorage.getItem('userLoggedIn')) {
+                window.location.href = 'login.html';
+            }
         });
     </script>
 </head>
@@ -121,6 +120,7 @@
     </div>
 </body>
 </html>
+
 
 
 
