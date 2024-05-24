@@ -173,15 +173,6 @@
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
 
-        function logOff() {
-            auth.signOut().then(() => {
-                sessionStorage.removeItem('userLoggedIn');
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             if (!sessionStorage.getItem('userLoggedIn')) {
                 window.location.href = 'login.html';
