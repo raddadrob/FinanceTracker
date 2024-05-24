@@ -22,6 +22,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            align-items: center; /* Center align */
         }
         h1 {
             text-align: center;
@@ -38,6 +39,7 @@
             padding: 10px;
             background: #333;
             color: #fff;
+            width: 100%;
         }
         .menu-icon {
             font-size: 24px;
@@ -77,6 +79,7 @@
         }
         .section {
             margin-bottom: 20px;
+            width: 100%;
         }
         table {
             width: 100%;
@@ -125,17 +128,13 @@
             color: red;
         }
         th:nth-child(1), td:nth-child(1) {
-            width: 40%;
+            width: 50%;
         }
         th:nth-child(2), td:nth-child(2) {
-            width: 20%;
+            width: 25%;
         }
         th:nth-child(3), td:nth-child(3) {
-            width: 20%;
-        }
-        th:nth-child(4), td:nth-child(4) {
-            width: 20%;
-            text-align: center;
+            width: 25%;
         }
         .popover {
             position: absolute;
@@ -267,7 +266,7 @@
             const tableBody = document.getElementById(`${collection}-table`).getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';
 
-            dataArray.forEach((item, index) => {
+            dataArray.forEach((item) => {
                 const row = tableBody.insertRow();
                 row.insertCell(0).innerText = item.description;
                 const previousValueCell = row.insertCell(1);
@@ -425,7 +424,6 @@
                             <th>Description</th>
                             <th>Previous Value</th>
                             <th>Value</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -446,7 +444,6 @@
                             <th>Description</th>
                             <th>Previous Value</th>
                             <th>Value</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -467,7 +464,6 @@
                             <th>Description</th>
                             <th>Previous Value</th>
                             <th>Value</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -488,7 +484,6 @@
                             <th>Description</th>
                             <th>Previous Value</th>
                             <th>Value</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
