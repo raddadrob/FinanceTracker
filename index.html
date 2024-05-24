@@ -61,22 +61,6 @@
         .menu-bar a:hover {
             background: #0c0;
         }
-        .menu-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .logoff-button {
-            background: #0f0;
-            color: #000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
-        .logoff-button:hover {
-            background: #0c0;
-        }
         .section {
             margin-bottom: 20px;
             width: 100%;
@@ -167,6 +151,22 @@
         .dropdown select:focus {
             outline: none;
             box-shadow: 0 0 5px #0f0;
+        }
+        .logoff-button {
+            background: #0f0;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 20px;
+            width: 100%; /* Full width */
+            max-width: 200px; /* Adjust width for mobile */
+            text-align: center;
+        }
+        .logoff-button:hover {
+            background: #0c0;
         }
         @media (max-width: 600px) {
             .menu-icon {
@@ -459,9 +459,6 @@
                 <a href="calendar.html">Cash Flow</a>
                 <a href="real_estate.html">Real Estate</a>
             </div>
-            <div class="menu-buttons">
-                <button class="logoff-button" onclick="logOff()">Log Off</button>
-            </div>
         </div>
         <div id="content" style="flex: 1;">
             <div class="section">
@@ -518,6 +515,7 @@
                 </div>
             </div>
         </div>
+        <button class="logoff-button" onclick="logOff()">Log Off</button>
     </div>
 
     <!-- Popover for Details -->
