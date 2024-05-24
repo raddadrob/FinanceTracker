@@ -31,7 +31,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+        }
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
         }
         .menu-links {
             display: flex;
@@ -72,6 +79,16 @@
             margin-bottom: 20px;
         }
         @media (max-width: 600px) {
+            .menu-icon {
+                display: block;
+            }
+            .menu-links {
+                display: none;
+                flex-direction: column;
+            }
+            .menu-links.active {
+                display: flex;
+            }
             .house {
                 padding: 10px;
                 margin-bottom: 10px;
@@ -81,7 +98,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
-        // Your Firebase configuration object
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
             authDomain: "cockrumfinance.firebaseapp.com",
@@ -92,7 +108,6 @@
             measurementId: "G-JFRC4K0BBF"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
@@ -102,6 +117,11 @@
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
+        }
+
+        function toggleMenu() {
+            const menuLinks = document.getElementById('menu-links');
+            menuLinks.classList.toggle('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -117,7 +137,10 @@
     <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
         <div class="menu-bar">
-            <div class="menu-links">
+            <div class="menu-icon" onclick="toggleMenu()">
+                &#9776;
+            </div>
+            <div class="menu-links" id="menu-links">
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
@@ -140,7 +163,6 @@
     </div>
 </body>
 </html>
-
 
 
 
