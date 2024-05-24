@@ -1,12 +1,12 @@
 // session.js
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
+    apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
+    authDomain: "cockrumfinance.firebaseapp.com",
+    projectId: "cockrumfinance",
+    storageBucket: "cockrumfinance.appspot.com",
+    messagingSenderId: "446623626941",
+    appId: "1:446623626941:web:3dc1d2e435caf61d04e9d4",
+    measurementId: "G-JFRC4K0BBF"
 };
 
 firebase.initializeApp(firebaseConfig);
