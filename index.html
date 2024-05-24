@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summary - Fitneez</title>
+    <title>Fitneez</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -22,10 +22,15 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
         h1 {
             text-align: center;
             color: #0f0;
+            font-size: 1.5rem;
+        }
+        h2 {
+            font-size: 1.25rem;
         }
         .menu-bar {
             display: flex;
@@ -34,6 +39,7 @@
             padding: 10px;
             background: #333;
             color: #fff;
+            width: 100%;
         }
         .menu-icon {
             font-size: 24px;
@@ -50,6 +56,7 @@
             padding: 10px 20px;
             background: #444;
             border-radius: 4px;
+            font-size: 0.875rem;
         }
         .menu-bar a:hover {
             background: #0c0;
@@ -65,70 +72,69 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.875rem;
         }
         .logoff-button:hover {
             background: #0c0;
         }
         .section {
             margin-bottom: 20px;
+            width: 100%;
         }
-        .card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+        .summary-tile {
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
         }
-        .card {
+        .popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
             background: #444;
             color: #fff;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            font-size: 0.875rem;
+            width: 90%;
+            max-width: 400px;
         }
-        .dropdown {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+        .popover table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
         }
-        .dropdown label {
-            margin-right: 10px;
-            color: #0f0;
+        .popover th, .popover td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
         }
-        .dropdown select {
-            padding: 10px;
-            background: #444;
-            color: #0f0;
+        .popover th {
+            background-color: #555;
+        }
+        .popover button {
+            padding: 8px;
+            background: #0f0;
+            color: #000;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-right: 10px;
         }
-        .dropdown select:focus {
-            outline: none;
-            box-shadow: 0 0 5px #0f0;
-        }
-        @media (max-width: 600px) {
-            .menu-icon {
-                display: block;
-            }
-            .menu-links {
-                display: none;
-                flex-direction: column;
-            }
-            .menu-links.active {
-                display: flex;
-            }
-            .section {
-                margin-bottom: 10px;
-            }
-            .card-container {
-                grid-template-columns: 1fr;
-            }
+        .popover button:hover {
+            background: #0c0;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
@@ -143,7 +149,11 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        let chart;
+
+        let stocksAndBonds = [];
+        let realEstate = [];
+        let miscAssets = [];
+        let liabilities = [];
 
         function logOff() {
             auth.signOut().then(() => {
@@ -160,155 +170,110 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged((user) => {
-                if (!user) {
-                    window.location.href = 'login.html';
+                if (user) {
+                    loadData();
                 } else {
-                    loadSummary();
-                    document.getElementById('month-select').addEventListener('change', updateChart);
-                    document.getElementById('year-select').addEventListener('change', updateChart);
+                    window.location.href = 'login.html';
                 }
             });
         });
 
-        async function loadSummary() {
-            const stocksAndBonds = await getTotal('stocks_and_bonds');
-            const realEstate = await getTotal('real_estate');
-            const miscAssets = await getTotal('misc_assets');
-            const liabilities = await getTotal('liabilities');
-            const totalAssets = stocksAndBonds + realEstate + miscAssets;
-            const netWorth = totalAssets - liabilities;
+        async function loadData() {
+            await loadCollection('stocks_and_bonds', stocksAndBonds);
+            await loadCollection('real_estate', realEstate);
+            await loadCollection('misc_assets', miscAssets);
+            await loadCollection('liabilities', liabilities);
+            updateSummary();
+        }
 
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(stocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(realEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(miscAssets)}`;
+        async function loadCollection(collection, dataArray) {
+            const snapshot = await db.collection(collection).get();
+            dataArray.length = 0;
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                dataArray.push(data);
+            });
+            dataArray.sort((a, b) => b.value - a.value);
+        }
+
+        function updateSummary() {
+            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
+            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
+            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
+            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
+            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
+            const netWorth = totalAssets - totalLiabilities;
+
+            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
+            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
+            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
             document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(Math.abs(liabilities))}`;
+            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
+            document.getElementById('total-liabilities').style.color = 'red';
             document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
 
-            const currentMonth = new Date().getMonth();
-            const monthName = new Date().toLocaleString('default', { month: 'long' });
-            const currentYear = new Date().getFullYear();
-            document.getElementById('month-select').value = monthName;
-            document.getElementById('year-select').value = currentYear;
-            await loadChartData(currentYear, currentMonth);
-        }
-
-        async function getTotal(collection) {
-            const snapshot = await db.collection(collection).get();
-            return snapshot.docs.reduce((total, doc) => total + doc.data().value, 0);
-        }
-
-        async function loadChartData(year, month) {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const credits = Array(daysInMonth).fill(0);
-            const debits = Array(daysInMonth).fill(0);
-            const creditDescriptions = Array(daysInMonth).fill("");
-            const debitDescriptions = Array(daysInMonth).fill("");
-            const cashBalances = Array(daysInMonth).fill(0);
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const doc = await db.collection('calendar').doc(`${year}-${month}-day-${day}`).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    credits[day - 1] = data.credit;
-                    debits[day - 1] = data.debit;
-                    cashBalances[day - 1] = data.cash;
-                    creditDescriptions[day - 1] = data.creditDescription || "";
-                    debitDescriptions[day - 1] = data.debitDescription || "";
-                }
-            }
-
-            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-            if (chart) {
-                chart.destroy();
-            }
-
-            const ctx = document.getElementById('cashFlowChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Credits',
-                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
-                            borderColor: 'rgba(0, 255, 0, 1)',
-                            borderWidth: 1,
-                            data: credits
-                        },
-                        {
-                            label: 'Debits',
-                            backgroundColor: 'rgba(255, 0, 0, 0.5)',
-                            borderColor: 'rgba(255, 0, 0, 1)',
-                            borderWidth: 1,
-                            data: debits
-                        },
-                        {
-                            label: 'Daily Cash Balance',
-                            type: 'line',
-                            backgroundColor: 'rgba(0, 255, 0, 0.5)',
-                            borderColor: 'rgba(0, 255, 0, 1)',
-                            fill: false,
-                            data: cashBalances
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: '#0f0'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#0f0',
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString();
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(0, 255, 0, 0.2)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#0f0'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const dataIndex = context.dataIndex;
-                                    const datasetIndex = context.datasetIndex;
-                                    const value = context.raw;
-                                    if (datasetIndex === 0) {
-                                        return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
-                                    } else if (datasetIndex === 1) {
-                                        return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
-                                    } else {
-                                        return `Cash Balance: $${value.toLocaleString()}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function updateChart() {
-            const selectedMonth = document.getElementById('month-select').value;
-            const selectedYear = document.getElementById('year-select').value;
-            const monthIndex = new Date(Date.parse(selectedMonth + " 1, 2021")).getMonth();
-            await loadChartData(selectedYear, monthIndex);
+            // Add event listeners for popups
+            document.getElementById('total-stocks_and_bonds').parentNode.onclick = () => showDetails('Stocks & Bonds', stocksAndBonds);
+            document.getElementById('total-real_estate').parentNode.onclick = () => showDetails('Real Estate', realEstate);
+            document.getElementById('total-misc_assets').parentNode.onclick = () => showDetails('Misc. Assets', miscAssets);
+            document.getElementById('total-liabilities').parentNode.onclick = () => showDetails('Liabilities', liabilities);
         }
 
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function showDetails(title, dataArray) {
+            const popover = document.getElementById('details-popover');
+            const popoverTitle = document.getElementById('details-title');
+            const popoverContent = document.getElementById('details-content');
+
+            popoverTitle.innerText = title;
+            popoverContent.innerHTML = '';
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            const headerRow = document.createElement('tr');
+            const th1 = document.createElement('th');
+            th1.innerText = 'Description';
+            const th2 = document.createElement('th');
+            th2.innerText = 'Value';
+
+            headerRow.appendChild(th1);
+            headerRow.appendChild(th2);
+            thead.appendChild(headerRow);
+
+            dataArray.forEach(item => {
+                const row = document.createElement('tr');
+                const td1 = document.createElement('td');
+                td1.innerText = item.description;
+                const td2 = document.createElement('td');
+                td2.innerText = `$${formatNumber(item.value)}`;
+
+                row.appendChild(td1);
+                row.appendChild(td2);
+                tbody.appendChild(row);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            popoverContent.appendChild(table);
+
+            popover.style.display = 'flex';
+        }
+
+        function closePopover() {
+            document.getElementById('details-popover').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const popover = document.getElementById('details-popover');
+            if (!event.target.closest('.popover') && !event.target.closest('.summary-tile')) {
+                popover.style.display = 'none';
+            }
         }
     </script>
 </head>
@@ -332,64 +297,33 @@
         <div id="content" style="flex: 1;">
             <div class="section">
                 <h2>Summary</h2>
-                <div class="card-container">
-                    <div class="card">
-                        <h3>Total Stocks & Bonds</h3>
-                        <p id="total-stocks_and_bonds">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total Real Estate</h3>
-                        <p id="total-real_estate">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total Misc. Assets</h3>
-                        <p id="total-misc_assets">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total Assets</h3>
-                        <p id="total-assets">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total Liabilities</h3>
-                        <p id="total-liabilities" style="color: red;">-$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Net Worth</h3>
-                        <p id="net-worth">$0</p>
-                    </div>
+                <div class="summary-tile" id="total-stocks_and_bonds-tile">
+                    Total Stocks & Bonds: <span id="total-stocks_and_bonds">$0</span>
                 </div>
-            </div>
-            <div class="section">
-                <h2>Cash Flow</h2>
-                <div class="dropdown">
-                    <label>Select Month: </label>
-                    <select id="month-select">
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                    <select id="year-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                    </select>
+                <div class="summary-tile" id="total-real_estate-tile">
+                    Total Real Estate: <span id="total-real_estate">$0</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="cashFlowChart"></canvas>
+                <div class="summary-tile" id="total-misc_assets-tile">
+                    Total Misc. Assets: <span id="total-misc_assets">$0</span>
+                </div>
+                <div class="summary-tile" id="total-assets-tile">
+                    Total Assets: <span id="total-assets">$0</span>
+                </div>
+                <div class="summary-tile" id="total-liabilities-tile">
+                    Total Liabilities: <span id="total-liabilities">-$0</span>
+                </div>
+                <div class="summary-tile" id="net-worth-tile">
+                    Net Worth: <span id="net-worth">$0</span>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Popover for Details -->
+    <div id="details-popover" class="popover">
+        <h2 id="details-title"></h2>
+        <div id="details-content"></div>
+        <button onclick="closePopover()">Close</button>
     </div>
 </body>
 </html>
