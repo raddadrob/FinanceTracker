@@ -1,4 +1,3 @@
-// session.js
 const firebaseConfig = {
     apiKey: "AIzaSyDy0PPpo6xMukyahC4DBCQ_ILJNROdvPWM",
     authDomain: "cockrumfinance.firebaseapp.com",
@@ -13,33 +12,24 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Set authentication persistence
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
-    console.log("Authentication state will persist across tabs and reloads.");
-}).catch((error) => {
-    console.error("Error setting authentication persistence:", error);
-});
-
-// Monitor authentication state
 auth.onAuthStateChanged((user) => {
-    if (user) {
-        console.log("User is signed in:", user);
-    } else {
-        console.log("No user is signed in.");
-        if (!window.location.pathname.endsWith('login.html')) {
+    if (!user) {
+        sessionStorage.removeItem('userLoggedIn');
+        if (!['/login.html'].includes(window.location.pathname)) {
             window.location.href = 'login.html';
         }
+    } else {
+        sessionStorage.setItem('userLoggedIn', 'true');
     }
 });
 
 function logOff() {
     auth.signOut().then(() => {
-        console.log("User signed out.");
+        sessionStorage.removeItem('userLoggedIn');
         window.location.href = 'login.html';
     }).catch((error) => {
         console.error('Error signing out:', error);
     });
 }
-
 
 
