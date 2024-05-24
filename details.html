@@ -134,7 +134,7 @@
         .action-buttons {
             display: flex;
             gap: 10px;  /* Increased gap */
-            justify-content: center;
+            justify-content: flex-end;  /* Align buttons to the right */
         }
         .action-button {
             background: #0f0;
@@ -169,6 +169,19 @@
             }
             table {
                 font-size: 14px;
+            }
+            th:nth-child(1), td:nth-child(1) {
+                width: 50%;
+            }
+            th:nth-child(2), td:nth-child(2) {
+                width: 20%;
+            }
+            th:nth-child(3), td:nth-child(3) {
+                width: 30%;
+                text-align: center;
+            }
+            .action-buttons {
+                justify-content: flex-end;  /* Align buttons to the right */
             }
         }
         .modal {
@@ -591,6 +604,7 @@
     </div>
 </body>
 </html>
+
 
 
 
