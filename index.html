@@ -80,17 +80,22 @@
         .section {
             margin-bottom: 20px;
             width: 100%;
+            text-align: center; /* Center align section content */
+        }
+        .summary-tiles-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Center align the tiles */
         }
         .summary-tile {
             background: #444;
             padding: 20px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin: 10px;
             width: 100%;
+            max-width: 300px; /* Max width to maintain consistency */
             text-align: center;
             cursor: pointer;
-            max-width: 300px;
-            margin: 10px auto; /* Center the tiles */
         }
         .popover {
             position: fixed;
@@ -438,23 +443,25 @@
         <div id="content" style="flex: 1;">
             <div class="section">
                 <h2>Summary</h2>
-                <div class="summary-tile" id="total-stocks_and_bonds-tile">
-                    Total Stocks & Bonds: <span id="total-stocks_and_bonds">$0</span>
-                </div>
-                <div class="summary-tile" id="total-real_estate-tile">
-                    Total Real Estate: <span id="total-real_estate">$0</span>
-                </div>
-                <div class="summary-tile" id="total-misc_assets-tile">
-                    Total Misc. Assets: <span id="total-misc_assets">$0</span>
-                </div>
-                <div class="summary-tile" id="total-assets-tile">
-                    Total Assets: <span id="total-assets">$0</span>
-                </div>
-                <div class="summary-tile" id="total-liabilities-tile">
-                    Total Liabilities: <span id="total-liabilities">-$0</span>
-                </div>
-                <div class="summary-tile" id="net-worth-tile">
-                    Net Worth: <span id="net-worth">$0</span>
+                <div class="summary-tiles-container">
+                    <div class="summary-tile" id="total-stocks_and_bonds-tile">
+                        Total Stocks & Bonds: <span id="total-stocks_and_bonds">$0</span>
+                    </div>
+                    <div class="summary-tile" id="total-real_estate-tile">
+                        Total Real Estate: <span id="total-real_estate">$0</span>
+                    </div>
+                    <div class="summary-tile" id="total-misc_assets-tile">
+                        Total Misc. Assets: <span id="total-misc_assets">$0</span>
+                    </div>
+                    <div class="summary-tile" id="total-assets-tile">
+                        Total Assets: <span id="total-assets">$0</span>
+                    </div>
+                    <div class="summary-tile" id="total-liabilities-tile">
+                        Total Liabilities: <span id="total-liabilities">-$0</span>
+                    </div>
+                    <div class="summary-tile" id="net-worth-tile">
+                        Net Worth: <span id="net-worth">$0</span>
+                    </div>
                 </div>
             </div>
             <div class="section">
@@ -498,6 +505,7 @@
     </div>
 </body>
 </html>
+
 
 
 
