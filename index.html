@@ -134,15 +134,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged((user) => {
-                if (!user || !sessionStorage.getItem('userLoggedIn')) {
-                    window.location.href = 'login.html';
-                } else {
-                    loadSummary();
-                    document.getElementById('month-select').addEventListener('change', updateChart);
-                    document.getElementById('year-select').addEventListener('change', updateChart);
-                }
-            });
+            if (!sessionStorage.getItem('userLoggedIn')) {
+                window.location.href = 'login.html';
+            } else {
+                loadSummary();
+                document.getElementById('month-select').addEventListener('change', updateChart);
+                document.getElementById('year-select').addEventListener('change', updateChart);
+            }
         });
 
         async function loadSummary() {
