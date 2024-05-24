@@ -233,9 +233,17 @@
                     document.getElementById('total-assets-tile').onclick = () => showDetails('Total Assets', 'assets');
                     document.getElementById('total-liabilities-tile').onclick = () => showDetails('Liabilities', 'liabilities');
                     document.getElementById('net-worth-tile').onclick = () => showDetails('Net Worth', 'net_worth');
+
+                    // Add event listener for hamburger menu
+                    document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
                 }
             });
         });
+
+        function toggleMenu() {
+            const menuLinks = document.getElementById('menu-links');
+            menuLinks.classList.toggle('active');
+        }
 
         async function loadSummary() {
             const stocksAndBonds = await getTotal('stocks_and_bonds');
