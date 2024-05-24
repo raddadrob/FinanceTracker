@@ -31,7 +31,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+        }
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
         }
         .menu-links {
             display: flex;
@@ -65,33 +72,17 @@
         .section {
             margin-bottom: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            margin-bottom: 20px;
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
         }
-        th, td {
-            border: 1px solid #555;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #444;
-        }
-        th, td {
+        .card {
+            background: #444;
             color: #fff;
-        }
-        #total-liabilities {
-            color: red;
-            text-decoration: underline double;
-        }
-        .chart-container {
-            margin-top: 20px;
-        }
-        .chart-container canvas {
-            background: #333;
+            padding: 15px;
             border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         .dropdown {
             display: flex;
@@ -116,26 +107,21 @@
             box-shadow: 0 0 5px #0f0;
         }
         @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-            .menu-bar {
-                flex-direction: column;
-                align-items: flex-start;
+            .menu-icon {
+                display: block;
             }
             .menu-links {
+                display: none;
                 flex-direction: column;
-                width: 100%;
             }
-            .menu-bar a {
-                width: 100%;
-                text-align: center;
+            .menu-links.active {
+                display: flex;
             }
             .section {
                 margin-bottom: 10px;
             }
-            table {
-                font-size: 14px;
+            .card-container {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -165,6 +151,11 @@
             }).catch((error) => {
                 console.error('Error signing out:', error);
             });
+        }
+
+        function toggleMenu() {
+            const menuLinks = document.getElementById('menu-links');
+            menuLinks.classList.toggle('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -266,19 +257,19 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#0f0' // Change x-axis labels color to green
+                                color: '#0f0'
                             }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: '#0f0', // Change y-axis labels color to green
+                                color: '#0f0',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
                             },
                             grid: {
-                                color: 'rgba(0, 255, 0, 0.2)' // Change y-axis grid lines color to green
+                                color: 'rgba(0, 255, 0, 0.2)'
                             }
                         }
                     },
@@ -294,11 +285,11 @@
                                     const dataIndex = context.dataIndex;
                                     const datasetIndex = context.datasetIndex;
                                     const value = context.raw;
-                                    if (datasetIndex === 0) { // Credits
+                                    if (datasetIndex === 0) {
                                         return `Credit: $${value.toLocaleString()} - ${creditDescriptions[dataIndex]}`;
-                                    } else if (datasetIndex === 1) { // Debits
+                                    } else if (datasetIndex === 1) {
                                         return `Debit: $${value.toLocaleString()} - ${debitDescriptions[dataIndex]}`;
-                                    } else { // Cash Balance
+                                    } else {
                                         return `Cash Balance: $${value.toLocaleString()}`;
                                     }
                                 }
@@ -325,7 +316,10 @@
     <div id="finance-tracker" class="container">
         <h1>Fitneez</h1>
         <div class="menu-bar">
-            <div class="menu-links">
+            <div class="menu-icon" onclick="toggleMenu()">
+                &#9776;
+            </div>
+            <div class="menu-links" id="menu-links">
                 <a href="index.html">Summary</a>
                 <a href="details.html">Balance Sheet</a>
                 <a href="calendar.html">Cash Flow</a>
@@ -338,32 +332,32 @@
         <div id="content" style="flex: 1;">
             <div class="section">
                 <h2>Summary</h2>
-                <table>
-                    <tr>
-                        <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Assets</th>
-                        <td id="total-assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities">-$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
+                <div class="card-container">
+                    <div class="card">
+                        <h3>Total Stocks & Bonds</h3>
+                        <p id="total-stocks_and_bonds">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Real Estate</h3>
+                        <p id="total-real_estate">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Misc. Assets</h3>
+                        <p id="total-misc_assets">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Assets</h3>
+                        <p id="total-assets">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Liabilities</h3>
+                        <p id="total-liabilities" style="color: red;">-$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Net Worth</h3>
+                        <p id="net-worth">$0</p>
+                    </div>
+                </div>
             </div>
             <div class="section">
                 <h2>Cash Flow</h2>
@@ -399,7 +393,6 @@
     </div>
 </body>
 </html>
-
 
 
 
