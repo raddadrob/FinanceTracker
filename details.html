@@ -24,7 +24,7 @@
             flex-direction: column;
         }
         h1 {
-            text-align: center;
+            text-align: left;
             color: #0f0;
         }
         .menu-bar {
@@ -62,27 +62,45 @@
         .logoff-button:hover, .theme-button:hover {
             background: #0c0;
         }
-        .section {
-            margin-bottom: 20px;
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            margin-bottom: 20px;
+        .dropdown {
+            display: flex;
+            align-items: center;
         }
-        th, td {
-            border: 1px solid #555;
-            padding: 8px;
-            text-align: left;
+        .dropdown label {
+            margin-right: 10px;
+            color: #0f0;
         }
-        th {
-            background-color: #444;
+        .dropdown select {
+            padding: 10px;
+            background: #444;
+            color: #0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .dropdown select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0f0;
+        }
+        .green-line {
+            height: 2px;
+            background-color: #0f0;
+            margin: 10px 0;
         }
         .form-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            margin-right: 10px;
+            color: #0f0;
         }
         .form-group input {
             padding: 8px;
@@ -91,38 +109,56 @@
             background: #222;
             color: #fff;
         }
-        .form-group button {
-            padding: 8px 16px;
-            background-color: #0f0;
-            color: #000;
-            border: none;
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        .day {
+            background: #444;
+            padding: 10px;
             border-radius: 4px;
-            cursor: pointer;
         }
-        .form-group button:hover {
-            background-color: #0c0;
+        .day header {
+            font-weight: bold;
+            margin-bottom: 10px;
         }
-        .delta-positive {
+        .day input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+        }
+        .day input.credit {
             color: green;
         }
-        .delta-negative {
+        .day input.debit {
             color: red;
         }
-        th:nth-child(1), td:nth-child(1) {
-            width: 45%;
+        .day input.description {
+            color: #fff;
         }
-        th:nth-child(2), td:nth-child(2) {
-            width: 15%;
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
         }
-        th:nth-child(3), td:nth-child(3) {
-            width: 15%;
+        .calendar-header div {
+            text-align: center;
+            font-weight: bold;
         }
-        th:nth-child(4), td:nth-child(4) {
-            width: 15%;
+        .ending-balance {
+            margin-top: 20px;
+            padding: 10px;
+            background: #444;
+            border-radius: 4px;
             text-align: center;
         }
-        button {
-            margin: 2px;
+        .cash-value {
+            font-weight: bold;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -130,10 +166,12 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="session.js"></script> <!-- Include session.js -->
     <script>
-        let stocksAndBonds = [];
-        let realEstate = [];
-        let miscAssets = [];
-        let liabilities = [];
+        let initialCashBalance = 0;
+        const cashBalances = {};
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
 
         function logOff() {
             auth.signOut().then(() => {
@@ -149,154 +187,158 @@
                 if (!user || !sessionStorage.getItem('userLoggedIn')) {
                     window.location.href = 'login.html';
                 } else {
-                    loadData();
+                    document.getElementById('initial-cash-balance').addEventListener('change', setInitialCashBalance);
+                    renderMonthSelector();
+                    renderCalendar();
                 }
             });
         });
 
-        async function loadData() {
-            await loadCollection('stocks_and_bonds', stocksAndBonds, updateTable);
-            await loadCollection('real_estate', realEstate, updateTable);
-            await loadCollection('misc_assets', miscAssets, updateTable);
-            await loadCollection('liabilities', liabilities, updateTable);
-            updateSummary();
+        function setInitialCashBalance(event) {
+            const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
+            initialCashBalance = value;
+            event.target.value = `$${formatNumber(value)}`;
+            db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).set({ balance: initialCashBalance });
+            calculateBalances();
         }
 
-        async function loadCollection(collection, dataArray, callback) {
-            const snapshot = await db.collection(collection).get();
-            dataArray.length = 0;
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                dataArray.push(data);
-            });
-            dataArray.sort((a, b) => b.value - a.value);  // Sort by value descending
-            callback(collection, dataArray);
-        }
-
-        function updateTable(collection, dataArray) {
-            const tableBody = document.getElementById(`${collection}-table`).getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-
-            dataArray.forEach((item, index) => {
-                const row = tableBody.insertRow();
-                row.insertCell(0).innerText = item.description;
-                const previousValueCell = row.insertCell(1);
-                const valueCell = row.insertCell(2);
-                if (collection === 'liabilities') {
-                    previousValueCell.innerText = item.previousValue ? `-$${formatNumber(item.previousValue)}` : '$0';
-                    previousValueCell.style.color = 'red';
-                    valueCell.innerText = item.value ? `-$${formatNumber(item.value)}` : '$0';
-                    valueCell.style.color = 'red';
+        function calculateBalances() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            let previousDayBalance = initialCashBalance;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const creditInput = document.getElementById(`credit-${day}`);
+                const debitInput = document.getElementById(`debit-${day}`);
+                const creditDescription = document.getElementById(`credit-description-${day}`);
+                const debitDescription = document.getElementById(`debit-description-${day}`);
+                const credit = parseFloat(creditInput.value.replace(/[^\d.-]/g, '')) || 0;
+                const debit = parseFloat(debitInput.value.replace(/[^\d.-]/g, '')) || 0;
+                const cashBalance = previousDayBalance + credit - Math.abs(debit);
+                cashBalances[day] = cashBalance;
+                const cashElement = document.getElementById(`cash-${day}`);
+                cashElement.innerText = `$${formatNumber(cashBalance)}`;
+                cashElement.style.fontWeight = 'bold';
+                if (cashBalance > 5000) {
+                    cashElement.style.color = '#0f0'; // Green
+                } else if (cashBalance >= 0 && cashBalance <= 4999) {
+                    cashElement.style.color = 'yellow'; // Yellow
                 } else {
-                    previousValueCell.innerText = `$${formatNumber(item.previousValue || 0)}`;
-                    valueCell.innerText = `$${formatNumber(item.value)}`;
+                    cashElement.style.color = 'red'; // Red
                 }
-                const delta = item.value - (item.previousValue || 0);
-                const deltaCell = document.createElement('span');
-                deltaCell.innerText = ` (${delta >= 0 ? '+' : ''}${formatNumber(delta)})`;
-                deltaCell.className = delta >= 0 ? 'delta-positive' : 'delta-negative';
-                deltaCell.style.fontSize = '0.8em';
-                deltaCell.style.fontStyle = 'italic';
-                valueCell.appendChild(deltaCell);
-                const actionCell = row.insertCell(3);
-                actionCell.style.textAlign = 'center';
-                const editButton = document.createElement('button');
-                editButton.innerText = 'Edit';
-                editButton.onclick = () => editItem(collection, index, item.id);
-                const deleteButton = document.createElement('button');
-                deleteButton.innerText = 'Delete';
-                deleteButton.onclick = () => deleteItem(collection, index, item.id);
-                actionCell.appendChild(editButton);
-                actionCell.appendChild(deleteButton);
+                creditInput.value = credit !== 0 ? `$${formatNumber(credit)}` : '';
+                debitInput.value = debit !== 0 ? `-$${formatNumber(Math.abs(debit))}` : '';
+                previousDayBalance = cashBalance;
+
+                db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).set({
+                    credit: credit,
+                    debit: debit,
+                    cash: cashBalance,
+                    creditDescription: creditDescription.value,
+                    debitDescription: debitDescription.value
+                }).catch(error => {
+                    console.error("Error storing document: ", error);
+                });
+            }
+            document.getElementById('ending-balance').innerText = `Ending Balance: $${formatNumber(previousDayBalance)}`;
+        }
+
+        async function renderCalendar() {
+            const calendar = document.querySelector('.calendar');
+            const month = monthNames[currentMonth] + ' ' + currentYear;
+            document.getElementById('month').innerText = month;
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const startDay = new Date(currentYear, currentMonth, 1).getDay(); // First day of the month
+
+            const initialBalanceDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-initial_balance`).get();
+            if (initialBalanceDoc.exists) {
+                initialCashBalance = initialBalanceDoc.data().balance;
+                document.getElementById('initial-cash-balance').value = `$${formatNumber(initialCashBalance)}`;
+            } else {
+                initialCashBalance = 0;
+                document.getElementById('initial-cash-balance').value = '';
+            }
+
+            // Clear existing calendar
+            calendar.innerHTML = '';
+
+            // Fill initial empty days
+            for (let i = 0; i < startDay; i++) {
+                const emptyElement = document.createElement('div');
+                emptyElement.classList.add('day');
+                calendar.appendChild(emptyElement);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('day');
+                dayElement.innerHTML = `
+                    <header>${day}</header>
+                    <input type="text" id="credit-${day}" class="credit" placeholder="Credit" onchange="calculateBalances()">
+                    <input type="text" id="credit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
+                    <input type="text" id="debit-${day}" class="debit" placeholder="Debit" onchange="calculateBalances()">
+                    <input type="text" id="debit-description-${day}" class="description" placeholder="Description" onchange="calculateBalances()">
+                    <div id="cash-${day}" class="cash-value">$0</div>
+                `;
+                calendar.appendChild(dayElement);
+
+                const dayDoc = await db.collection('calendar').doc(`${currentYear}-${currentMonth}-day-${day}`).get();
+                if (dayDoc.exists) {
+                    const data = dayDoc.data();
+                    document.getElementById(`credit-${day}`).value = data.credit ? `$${formatNumber(data.credit)}` : '';
+                    document.getElementById(`credit-description-${day}`).value = data.creditDescription || '';
+                    document.getElementById(`debit-${day}`).value = data.debit ? `-$${formatNumber(Math.abs(data.debit))}` : '';
+                    document.getElementById(`debit-description-${day}`).value = data.debitDescription || '';
+                    const cashElement = document.getElementById(`cash-${day}`);
+                    cashElement.innerText = `$${formatNumber(data.cash)}`;
+                    cashElement.style.fontWeight = 'bold';
+                    if (data.cash > 5000) {
+                        cashElement.style.color = '#0f0'; // Green
+                    } else if (data.cash >= 0 && data.cash <= 4999) {
+                        cashElement.style.color = 'yellow'; // Yellow
+                    } else {
+                        cashElement.style.color = 'red'; // Red
+                    }
+                }
+            }
+
+            calculateBalances();
+        }
+
+        function renderMonthSelector() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            monthSelect.innerHTML = '';
+            yearSelect.innerHTML = '';
+
+            monthNames.forEach((monthName, index) => {
+                const monthOption = document.createElement('option');
+                monthOption.value = monthName;
+                monthOption.innerText = monthName;
+                monthSelect.appendChild(monthOption);
+            });
+
+            for (let year = 2020; year <= 2030; year++) {
+                const yearOption = document.createElement('option');
+                yearOption.value = year;
+                yearOption.innerText = year;
+                yearSelect.appendChild(yearOption);
+            }
+
+            monthSelect.value = monthNames[currentMonth];
+            yearSelect.value = currentYear;
+
+            monthSelect.addEventListener('change', () => {
+                currentMonth = monthNames.indexOf(monthSelect.value);
+                renderCalendar();
+            });
+
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value, 10);
+                renderCalendar();
             });
         }
 
         function formatNumber(value) {
             return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        function editItem(collection, index, id) {
-            const item = getItem(collection, index);
-            const description = prompt('Enter new description:', item.description);
-            const value = parseFloat(prompt('Enter new value:', item.value));
-            if (description && !isNaN(value)) {
-                db.collection(collection).doc(id).update({
-                    description: description,
-                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
-                    previousValue: item.value
-                }).then(() => {
-                    item.description = description;
-                    item.value = value;
-                    loadData(); // Reload data to update the table and summary
-                });
-            }
-        }
-
-        async function deleteItem(collection, index, id) {
-            await db.collection(collection).doc(id).delete();
-            loadData(); // Reload data to update the table and summary
-        }
-
-        async function addAsset(collection) {
-            const descriptionInput = document.getElementById(`${collection}-description`);
-            const valueInput = document.getElementById(`${collection}-value`);
-
-            if (!descriptionInput || !valueInput) {
-                console.log(`Error: Unable to find input elements for ${collection}`);
-                return;
-            }
-
-            const description = descriptionInput.value;
-            const value = parseFloat(valueInput.value);
-
-            if (description && !isNaN(value)) {
-                const newItem = {
-                    description,
-                    value: collection === 'liabilities' ? Math.abs(value) : value, // Store value as positive for liabilities
-                    previousValue: 0
-                };
-                const docRef = await db.collection(collection).add(newItem);
-                newItem.id = docRef.id;
-                console.log(`Added ${collection} item with ID ${newItem.id}`); // Logging
-                loadData(); // Reload data to update the table and summary
-                descriptionInput.value = '';
-                valueInput.value = '';
-            } else {
-                console.log(`Failed to add item to ${collection}: Invalid input`); // Logging
-            }
-        }
-
-        function updateSummary() {
-            const totalStocksAndBonds = stocksAndBonds.reduce((sum, item) => sum + item.value, 0);
-            const totalRealEstate = realEstate.reduce((sum, item) => sum + item.value, 0);
-            const totalMiscAssets = miscAssets.reduce((sum, item) => sum + item.value, 0);
-            const totalLiabilities = liabilities.reduce((sum, item) => sum + item.value, 0);
-            const totalAssets = totalStocksAndBonds + totalRealEstate + totalMiscAssets;
-            const netWorth = totalAssets - totalLiabilities;
-
-            document.getElementById('total-stocks_and_bonds').innerText = `$${formatNumber(totalStocksAndBonds)}`;
-            document.getElementById('total-real_estate').innerText = `$${formatNumber(totalRealEstate)}`;
-            document.getElementById('total-misc_assets').innerText = `$${formatNumber(totalMiscAssets)}`;
-            document.getElementById('total-assets').innerText = `$${formatNumber(totalAssets)}`;
-            document.getElementById('total-liabilities').innerText = `-$${formatNumber(totalLiabilities)}`;
-            document.getElementById('total-liabilities').style.color = 'red';
-            document.getElementById('net-worth').innerText = `$${formatNumber(netWorth)}`;
-        }
-
-        function getItem(collection, index) {
-            switch (collection) {
-                case 'stocks_and_bonds':
-                    return stocksAndBonds[index];
-                case 'real_estate':
-                    return realEstate[index];
-                case 'misc_assets':
-                    return miscAssets[index];
-                case 'liabilities':
-                    return liabilities[index];
-                default:
-                    return null;
-            }
         }
     </script>
 </head>
@@ -311,126 +353,37 @@
                 <a href="real_estate.html">Real Estate</a>
             </div>
             <div class="menu-buttons">
+                <button class="theme-button" onclick="toggleTheme()">Theme</button>
                 <button class="logoff-button" onclick="logOff()">Log Off</button>
             </div>
         </div>
         <div id="content" style="flex: 1;">
-            <div class="section" id="stocks-and-bonds-section">
-                <h2>Stocks & Bonds</h2>
-                <table id="stocks_and_bonds-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Previous Value</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Stocks & Bonds rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="stocks_and_bonds-description" placeholder="Description">
-                    <input type="number" id="stocks_and_bonds-value" placeholder="Value">
-                    <button onclick="addAsset('stocks_and_bonds')">Add Stocks & Bonds</button>
+            <div class="controls">
+                <div class="dropdown">
+                    <label>Select Month:</label>
+                    <select id="month-select"></select>
+                    <select id="year-select"></select>
                 </div>
+                <h2>Cash Flow</h2>
             </div>
-
-            <div class="section" id="real-estate-section">
-                <h2>Real Estate</h2>
-                <table id="real_estate-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Previous Value</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Real Estate rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="real_estate-description" placeholder="Description">
-                    <input type="number" id="real_estate-value" placeholder="Value">
-                    <button onclick="addAsset('real_estate')">Add Real Estate</button>
-                </div>
+            <div class="green-line"></div>
+            <div class="form-group">
+                <label for="initial-cash-balance">Initial Cash Balance:</label>
+                <input type="text" id="initial-cash-balance" placeholder="Enter initial cash balance">
             </div>
-
-            <div class="section" id="misc-assets-section">
-                <h2>Misc. Assets</h2>
-                <table id="misc_assets-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Previous Value</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Misc. Assets rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="misc_assets-description" placeholder="Description">
-                    <input type="number" id="misc_assets-value" placeholder="Value">
-                    <button onclick="addAsset('misc_assets')">Add Misc. Assets</button>
-                </div>
+            <h2 id="month" style="text-align: center;"></h2>
+            <div class="calendar-header">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
             </div>
-
-            <div class="section" id="liabilities-section">
-                <h2>Liabilities</h2>
-                <table id="liabilities-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Previous Value</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Liability rows will go here -->
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <input type="text" id="liabilities-description" placeholder="Description">
-                    <input type="number" id="liabilities-value" placeholder="Value">
-                    <button onclick="addAsset('liabilities')">Add Liability</button>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>Summary</h2>
-                <table>
-                    <tr>
-                        <th>Total Stocks & Bonds</th>
-                        <td id="total-stocks_and_bonds">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Real Estate</th>
-                        <td id="total-real_estate">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Misc. Assets</th>
-                        <td id="total-misc_assets">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Assets</th>
-                        <td id="total-assets" style="text-decoration: underline;">$0</td>
-                    </tr>
-                    <tr>
-                        <th>Total Liabilities</th>
-                        <td id="total-liabilities" style="text-decoration: underline double; color: red;">-$0</td>
-                    </tr>
-                    <tr class="total">
-                        <th>Net Worth</th>
-                        <td id="net-worth">$0</td>
-                    </tr>
-                </table>
+            <div class="calendar"></div>
+            <div class="ending-balance">
+                <span id="ending-balance">Ending Balance: $0</span>
             </div>
         </div>
     </div>
